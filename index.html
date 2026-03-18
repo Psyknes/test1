@@ -255,7 +255,47 @@ border-radius:12px;
 .appContainer{
 max-width:100%;
 }
+.hunterUnified{
+padding:10px;
+background:#151515;
+border-radius:12px;
+}
 
+.hunterTitle{
+text-align:center;
+font-weight:bold;
+margin-bottom:8px;
+border-bottom:1px solid #333;
+padding-bottom:6px;
+}
+
+.hunterSplit{
+display:flex;
+}
+
+.hunterBox{
+flex:1;
+padding:8px;
+text-align:center;
+}
+
+.hunterBox:first-child{
+border-right:1px solid #333;
+}
+
+.hunterLabel{
+font-size:13px;
+opacity:.8;
+margin-bottom:4px;
+}
+
+.tripleBox .hunterLabel{
+color:#ffd700;
+}
+
+.doubleBox .hunterLabel{
+color:#6fb6ff;
+}
 }  
   
 </style>
@@ -288,16 +328,22 @@ max-width:100%;
 
 </div>
   
-<div class="hunterRow">
+<div class="card hunterUnified">
 
-<div class="card hunterTriple">
-<b>Task Hunter – Triple Stack</b>
+<div class="hunterTitle">Task Hunter</div>
+
+<div class="hunterSplit">
+
+<div class="hunterBox tripleBox">
+<div class="hunterLabel">Triple Chain</div>
 <div class="timer" id="timer"></div>
 </div>
 
-<div class="card hunterDouble">
-<b>Task Hunter – Double Stack</b>
+<div class="hunterBox doubleBox">
+<div class="hunterLabel">Double Chain</div>
 <div class="timer" id="doubleTimer"></div>
+</div>
+
 </div>
 
 </div>

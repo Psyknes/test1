@@ -310,31 +310,14 @@ max-width:100%;
 <div class="card triple">
 <h2>◆ Triple Stack (Alliance Duel | Turbo Turtle | Power Play)</h2>
 
-<div class="row"><span>Mon</span><span class="time" data-day="1" data-hour="16">Gear Enhancement</span></div>
-<div class="row"><span>Tue</span><span class="time" data-day="2" data-hour="0">Construction Speed Up</span></div>
-<div class="row"><span>Wed</span><span class="time" data-day="3" data-hour="4">Research Speed Up</span></div>  
-<div class="row"><span>Wed</span><span class="time" data-day="3" data-hour="12">Behemoth</span></div>
-<div class="row"><span>Thu</span><span class="time" data-day="4" data-hour="12">Hero Fragments</span></div>
-<div class="row"><span>Fri</span><span class="time" data-day="5" data-hour="12">Construction Speed Up</span></div>
-<div class="row"><span>Sat</span><span class="time" data-day="6" data-hour="16">Research Speed Up</span></div>
-
+<div id="tripleList"></div>
 </div>
 
 
 <div class="card double">
 <h2>◆ Double Stack (For Rankings)</h2>
 
-<div class="row"><span>Mon</span><span class="time" data-day="1" data-hour="12">Research Speed Up</span></div>
-<div class="row"><span>Tue</span><span class="time" data-day="2" data-hour="12">Gear Enhancement</span></div>
-<div class="row"><span>Wed</span><span class="time" data-day="3" data-hour="4">Research Power Up</span></div>
-<div class="row"><span>Fri</span><span class="time" data-day="5" data-hour="0">Gear Enhancement</span></div>
-<div class="row"><span>Fri</span><span class="time" data-day="5" data-hour="12">Construction Power Up</span></div>
-<div class="row"><span>Sat</span><span class="time" data-day="6" data-hour="8">Construction Speed Up</span></div>
-<div class="row"><span>Sun</span><span class="time" data-day="0" data-hour="0">Hero Fragments</span></div>
-<div class="row"><span>Sun</span><span class="time" data-day="0" data-hour="4">Construction Speed Up</span></div>
-<div class="row"><span>Sun</span><span class="time" data-day="0" data-hour="12">Research Speed Up</span></div>
-<div class="row"><span>Sun</span><span class="time" data-day="0" data-hour="16">Gear Enhancement</span></div>
-<div class="row"><span>Sun</span><span class="time" data-day="0" data-hour="20">Behemoth</span></div>
+<div id="doubleList"></div>
 
 </div>
 
@@ -393,6 +376,18 @@ max-width:100%;
 
 <script>
 
+const rawData = [
+{d:1, event:"Alliance Duel", task:"Gear Enhancement", time:16},
+{d:2, event:"Alliance Duel", task:"Construction Speed Up", time:0},
+{d:3, event:"Alliance Duel", task:"Research Speed Up", time:4},
+{d:3, event:"Alliance Duel", task:"Behemoth", time:12},
+{d:4, event:"Alliance Duel", task:"Hero Fragments", time:12},
+{d:5, event:"Alliance Duel", task:"Construction Speed Up", time:12},
+{d:6, event:"Alliance Duel", task:"Research Speed Up", time:16},
+
+// add Power Play / Turbo Turtle rows here later from Excel
+];
+  
 const events=[
 {d:1,h:16,name:"Gear Enhancement"},
 {d:2,h:0,name:"Construction Speed Up"},
@@ -416,6 +411,113 @@ const doubleEvents=[
 {d:0,h:16,name:"Gear Enhancement"},
 {d:0,h:20,name:"Behemoth"}
 ];
+
+function buildTaskMap(){
+
+let map = {};
+
+rawData.forEach(e => {
+
+let key = e.d + "|" + e.task;
+
+if(!map[key]){
+map[key] = {
+d: e.d,
+task: e.task,
+times: [],
+events: []
+};
+}
+
+map[key].times.push(e.time);
+map[key].events.push(e.event);
+
+});
+
+return Object.values(map);
+
+}  
+
+function classifyTasks(){
+
+let tasks = buildTaskMap();
+
+let triple = [];
+let double = [];
+
+tasks.forEach(t => {
+
+let uniqueEvents = [...new Set(t.events)];
+let count = uniqueEvents.length;
+
+if(count >= 3){
+triple.push({...t, type:"triple"});
+}
+else if(count === 2){
+double.push({...t, type:"double"});
+}
+
+});
+
+return {triple, double};
+
+}
+
+function renderTriple(){
+
+let {triple} = classifyTasks();
+
+let container = document.getElementById("tripleList");
+
+container.innerHTML = "";
+
+triple.forEach(t => {
+
+let row = document.createElement("div");
+row.className = "row";
+
+let day = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][t.d];
+
+row.innerHTML = `
+<span>${day}</span>
+<span class="time" data-day="${t.d}" data-hour="${t.times[0]}">
+${t.task}
+</span>
+`;
+
+container.appendChild(row);
+
+});
+
+}  
+  
+function renderDouble(){
+
+let {double} = classifyTasks();
+
+let container = document.getElementById("doubleList");
+
+container.innerHTML = "";
+
+double.forEach(t => {
+
+let row = document.createElement("div");
+row.className = "row";
+
+let day = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][t.d];
+
+row.innerHTML = `
+<span>${day}</span>
+<span class="time" data-day="${t.d}" data-hour="${t.times[0]}">
+${t.task}
+</span>
+`;
+
+container.appendChild(row);
+
+});
+
+}
   
 function getEventTimes(e){
 
@@ -705,17 +807,26 @@ el.innerHTML = "No upcoming double stack";
 }
 
 setInterval(function(){
+
+renderTriple();
+renderDouble();
+
+convertTimes();
 updateTimer();
 updateDoubleTimer();
 highlightTask();
 updateTodayPanel();
+
 },1000);
 
+renderTriple();
+renderDouble();  
+  
 convertTimes();  
 updateTimer();
 updateDoubleTimer();  
 highlightTask();
-  
+ 
   
 function updateTodayPanel(){
 

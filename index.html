@@ -807,9 +807,8 @@ triple.forEach(t => {
 let timing = getTaskTiming(t);
 
 // PRIORITY 1 → ACTIVE
-if(timing.active){
+if(timing.active && !selected){
 selected = {task:t, timing};
-return;
 }
 
 // PRIORITY 2 → NEXT SOONEST
@@ -822,6 +821,7 @@ soonest = {task:t, timing};
 });
 
 if(!selected) selected = soonest;
+console.log(selected);  
 
 if(!selected){
 timer.innerHTML = "No upcoming tasks";
@@ -883,9 +883,8 @@ double.forEach(t => {
 let timing = getTaskTiming(t);
 
 // PRIORITY 1 → ACTIVE
-if(timing.active){
+if(timing.active && !selected){
 selected = {task:t, timing};
-return;
 }
 
 // PRIORITY 2 → NEXT SOONEST
@@ -898,6 +897,7 @@ soonest = {task:t, timing};
 });
 
 if(!selected) selected = soonest;
+console.log(selected);  
 
 if(!selected){
 el.innerHTML = "No upcoming tasks";

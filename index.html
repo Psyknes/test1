@@ -611,8 +611,6 @@ return {triple, double};
 function renderTriple(){
 
 let {triple} = classifyTasks();
-console.log(triple);  
-
 let container = document.getElementById("tripleList");
 
 container.innerHTML = "";
@@ -622,26 +620,29 @@ triple.forEach(t => {
 let row = document.createElement("div");
 row.className = "row";
 
-let day = t.d;
+let timeText = "";
+
+if(t.times.includes("ALL")){
+timeText = "All Day";
+}else{
+let h = t.times[0];
+timeText = h.toString().padStart(2,'0') + ":00";
+}  
 
 row.innerHTML = `
-<span>${day}</span>
-<span class="time" data-day="${t.d}" data-hour="${t.times[0]}">
-${t.task}
-</span>
+<span>${t.d}</span>
+<span>${timeText} — ${t.task}</span>
 `;
 
 container.appendChild(row);
 
 });
 
-}  
+} 
   
 function renderDouble(){
 
 let {double} = classifyTasks();
-console.log(double);  
-
 let container = document.getElementById("doubleList");
 
 container.innerHTML = "";
@@ -651,18 +652,25 @@ double.forEach(t => {
 let row = document.createElement("div");
 row.className = "row";
 
-let day = t.d;
+let timeText = "";
+
+if(t.times.includes("ALL")){
+timeText = "All Day";
+}else{
+let h = t.times[0];
+timeText = h.toString().padStart(2,'0') + ":00";
+}
 
 row.innerHTML = `
-<span>${day}</span>
-<span class="time" data-day="${t.d}" data-hour="${t.times[0]}">
-${t.task}
-</span>
+<span>${t.d}</span>
+<span>${timeText} — ${t.task}</span>
 `;
 
 container.appendChild(row);
 
 });
+
+}
 
 }
   
@@ -682,121 +690,7 @@ eventEnd.setHours(eventEnd.getHours()+4);
 return {start:eventStart,end:eventEnd};
 
 }
-
-function highlightTask(){
-
-let now = new Date();
-
-/* ---------- TRIPLE STACK ---------- */
-
-let tripleActive = null;
-let tripleNext = null;
-let tripleNextTime = null;
-
-document.querySelectorAll(".card.triple .time").forEach(el=>{
-
-let day = parseInt(el.dataset.day);
-let hour = parseInt(el.dataset.hour);
-
-let eventStart = new Date();
-eventStart.setUTCHours(hour,0,0,0);
-
-let diff = day - eventStart.getUTCDay();
-if(diff < 0) diff += 7;
-
-eventStart.setUTCDate(eventStart.getUTCDate()+diff);
-
-let eventEnd = new Date(eventStart);
-eventEnd.setHours(eventEnd.getHours()+4);
-
-let row = el.closest(".row");
-
-if(now >= eventStart && now < eventEnd){
-tripleActive = row;
-}
-
-if(eventStart > now){
-if(!tripleNextTime || eventStart < tripleNextTime){
-tripleNextTime = eventStart;
-tripleNext = row;
-}
-}
-
-});
-
-/* clear triple styles */
-document.querySelectorAll(".card.triple .row").forEach(r=>{
-r.style.background="";
-r.style.boxShadow="";
-});
-
-/* apply triple highlight */
-if(tripleActive){
-tripleActive.style.background="#2f2a00";
-tripleActive.style.boxShadow="0 0 8px rgba(255,215,0,0.5)";
-}
-else if(tripleNext){
-tripleNext.style.background="#1a2633";
-tripleNext.style.boxShadow="0 0 6px rgba(77,166,255,0.35)";
-}
-
-
-/* ---------- DOUBLE STACK ---------- */
-
-let doubleActive = null;
-let doubleNext = null;
-let doubleNextTime = null;
-
-document.querySelectorAll(".card.double .time").forEach(el=>{
-
-let day = parseInt(el.dataset.day);
-let hour = parseInt(el.dataset.hour);
-
-let eventStart = new Date();
-eventStart.setUTCHours(hour,0,0,0);
-
-let diff = day - eventStart.getUTCDay();
-if(diff < 0) diff += 7;
-
-eventStart.setUTCDate(eventStart.getUTCDate()+diff);
-
-let eventEnd = new Date(eventStart);
-eventEnd.setHours(eventEnd.getHours()+4);
-
-let row = el.closest(".row");
-
-if(now >= eventStart && now < eventEnd){
-doubleActive = row;
-}
-
-if(eventStart > now){
-if(!doubleNextTime || eventStart < doubleNextTime){
-doubleNextTime = eventStart;
-doubleNext = row;
-}
-}
-
-});
-
-/* clear double styles */
-document.querySelectorAll(".card.double .row").forEach(r=>{
-r.style.background="";
-r.style.boxShadow="";
-});
-
-/* apply double highlight */
-if(doubleActive){
-doubleActive.style.background="#2f2a00";
-doubleActive.style.boxShadow="0 0 8px rgba(255,215,0,0.5)";
-}
-else if(doubleNext){
-doubleNext.style.background="#1a2633";
-doubleNext.style.boxShadow="0 0 6px rgba(77,166,255,0.35)";
-}
-
-}
-
-  
+ 
 function convertTimes(){
 
 document.querySelectorAll(".time").forEach(el=>{
@@ -877,6 +771,12 @@ let selected = null;
 let soonest = null;
 
 triple.forEach(t => {
+
+// ✅ PRIORITY 0 → ALL DAY
+if(t.times.includes("ALL") && !selected){
+selected = {task:t, timing:null};
+return;
+}
 
 let timing = getTaskTiming(t);
 
@@ -959,6 +859,12 @@ let selected = null;
 let soonest = null;
 
 double.forEach(t => {
+
+// ✅ PRIORITY 0 → ALL DAY
+if(t.times.includes("ALL") && !selected){
+selected = {task:t, timing:null};
+return;
+}
 
 let timing = getTaskTiming(t);
 
@@ -1048,7 +954,6 @@ renderDouble();
 convertTimes();
 updateTimer();
 updateDoubleTimer();
-highlightTask();
 updateTodayPanel();
 
 },1000);
@@ -1059,7 +964,6 @@ renderDouble();
 convertTimes();  
 updateTimer();
 updateDoubleTimer();  
-highlightTask();
  
   
 function updateTodayPanel(){

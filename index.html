@@ -261,9 +261,10 @@ font-size:18px;
 } 
   
 .hunterUnified{
-padding:6px;
-background:#101010;
-border:1px solid #2a2a2a;
+padding:8px;
+background:#0d0d0d;
+border:1px solid #333;
+box-shadow:0 0 10px rgba(0,0,0,0.6);
 }
 
 .hunterTitle{
@@ -304,15 +305,10 @@ white-space: nowrap;
 }
     
 .hunterLabel{
-font-size:13px;
-opacity:.8;
-margin-bottom:6px;
-text-align:center;
-}
-
-.hunterLabel{
-margin-bottom:4px;
 font-size:12px;
+opacity:.8;
+margin-bottom:4px;
+text-align:center;
 }
 
 .hunterBox .timer{
@@ -499,6 +495,15 @@ font-weight:bold;
 
 
 <script>
+
+let cachedTasks = null;  
+
+function getTasks(){
+if(!cachedTasks){
+cachedTasks = classifyTasks();
+}
+return cachedTasks;
+}  
 
 const eventIcons = {
 "Alliance Duel": "Alliance_Duel.PNG",
@@ -1066,7 +1071,7 @@ let now = new Date();
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let today = days[now.getUTCDay()];
 
-let {triple, double} = classifyTasks();
+let {triple, double} = getTasks();
 
 let container = document.getElementById("todayPanel");
 

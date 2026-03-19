@@ -327,6 +327,15 @@ color:#ffd700;
 .doubleBox .hunterLabel{
 color:#6fb6ff;
 }
+
+.eventIcon{
+width:28px;
+height:28px;
+border-radius:50%;
+object-fit:cover;
+margin-right:4px;
+vertical-align:middle;
+}  
   
 </style>
 </head>
@@ -449,6 +458,16 @@ color:#6fb6ff;
 
 
 <script>
+
+const eventIcons = {
+"Alliance Duel": "alliance_duel.png",
+"Power Play": "power_play.png",
+"Turbo Turtle": "turbo_turtle.png",
+"Ghoulion Pursuit": "ghoulion.png",
+"Reservoir Raid": "reservoir_raid.png",
+"Lost Frontier": "lost_frontier.png",
+"Leprechaun Event": "leprechaun.png"
+};
 
 const rawData = [
 
@@ -943,6 +962,16 @@ el.innerHTML = "No upcoming tasks";
 }  
 }
 
+  function getEventIcons(events){
+
+return [...new Set(events)].map(e => {
+let src = eventIcons[e];
+if(!src) return "";
+return `<img src="${src}" class="eventIcon">`;
+}).join("");
+
+}
+  
 setInterval(function(){
 
 renderTriple();
@@ -1000,9 +1029,11 @@ else{
 status = "✔ Completed";
 }
 
+let icons = getEventIcons(t.events);
+
 html += `
 <div class="row todayRow">
-<span>${t.task}</span>
+<span>${icons} ${t.task}</span>
 <span>${status}</span>
 </div>
 `;
@@ -1035,9 +1066,11 @@ else{
 status = "✔ Completed";
 }
 
+let icons = getEventIcons(t.events);  
+  
 html += `
 <div class="row">
-<span>${t.task}</span>
+<span>${icons} ${t.task}</span>
 <span>${status}</span>
 </div>
 `;

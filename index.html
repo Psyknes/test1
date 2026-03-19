@@ -671,8 +671,6 @@ container.appendChild(row);
 });
 
 }
-
-}
   
 function getEventTimes(e){
 
@@ -732,7 +730,10 @@ if(h === "ALL") return; // ✅ skip all-day tasks
 let start = new Date();
 start.setUTCHours(h,0,0,0);
 
-let diff = task.d - start.getUTCDay();
+let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+let taskDay = days.indexOf(task.d);
+
+let diff = taskDay - start.getUTCDay();
 if(diff < 0) diff += 7;
 
 start.setUTCDate(start.getUTCDate()+diff);

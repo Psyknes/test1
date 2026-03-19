@@ -283,7 +283,7 @@ gap:6px;
 
 .hunterBox{
 flex:1;
-padding:8px;
+padding:6px 6px;
 text-align:center;
 display:flex;
 flex-direction:column;
@@ -870,9 +870,8 @@ let diff = next.start - now;
 let h = Math.floor(diff/1000/60/60);
 let m = Math.floor((diff/1000/60)%60);
 
-el.innerHTML =
-"<small>Next</small><br><b>"+next.name+"</b>"+
-"<br>"+h+"h "+m+"m";
+ el.innerHTML =
+"<small>Next</small><br><b>"+next.name+"</b> • "+h+"h "+m+"m"; 
 
 }
 else{

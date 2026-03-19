@@ -388,6 +388,7 @@ position:relative;
 display:flex;
 align-items:center;
 margin-bottom:10px;
+justify-content:flex-start;  
 }
   
 .headerText{
@@ -413,6 +414,11 @@ opacity:.7;
 .headerBar{
 height:50px;
 }
+
+.headerBar::after{
+content:"";
+width:80px; /* same as logo width */
+}  
   
 </style>
 </head>

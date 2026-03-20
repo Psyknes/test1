@@ -421,6 +421,32 @@ height:50px;
 content:"";
 width:80px; /* same as logo width */
 }  
+
+.ghoulionBar{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:6px;
+
+background:rgba(20,20,20,0.85);
+border-radius:8px;
+padding:6px 10px;
+
+font-size:13px;
+color:#e0e0e0;
+
+box-shadow:0 0 6px rgba(255,215,0,0.25);
+}
+
+.ghTimer{
+opacity:.7;
+font-size:12px;
+}  
+
+.ghoulionBar.alert{
+color:#ffd54a;
+box-shadow:0 0 10px rgba(255,215,0,0.6);
+}  
   
 </style>
 </head>
@@ -1322,9 +1348,6 @@ container.innerHTML = html;
 
 updateTodayPanel();
 
-const ghoulionStart = new Date("2025-07-19T12:45:00Z");
-const ghoulionInterval = 48 * 60 * 60 * 1000;
-
 function updateGhoulion(){
 
 let now = new Date();
@@ -1341,26 +1364,34 @@ let h = Math.floor(remaining / 1000 / 60 / 60);
 let m = Math.floor((remaining / 1000 / 60) % 60);
 
 let localTime = next.toLocaleTimeString([],{
-hour:'2-digit',
+hour:'numeric',
 minute:'2-digit',
 hour12: true  
 });
 
-let timerText =
-"<span class='huntLine'>Next Hunt • "+localTime+" ("+h+"h "+m+"m)</span>";
+let timerText = "";
 
 if(remaining < 30*60*1000){
+
 timerText =
-"<b style='color:#ff4d4d'>⚠ PREPARE ALLIANCE</b><br>"+
-localTime+
-"<br><small>("+h+"h "+m+"m)</small>";
+"<div class='ghoulionBar alert'>⚠ Prepare Alliance • "+localTime+
+" <span class='ghTimer'>("+h+"h "+m+"m)</span></div>";
+
+}else{
+
+timerText =
+"<div class='ghoulionBar'>🐺 Ghoulion • Next Hunt • "+localTime+
+" <span class='ghTimer'>("+h+"h "+m+"m)</span></div>";
+
 }
 
 document.getElementById("ghoulionTimer").innerHTML = timerText;
+
 }
 
-setInterval(updateGhoulion,1000);
-updateGhoulion();  
+updateGhoulion();
+
+setInterval(updateGhoulion, 1000); 
   
 </script>
 

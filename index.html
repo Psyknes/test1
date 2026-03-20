@@ -464,6 +464,48 @@ font-size:12px;
 #timer b, #doubleTimer b{
 font-size:18px;
 }  
+
+.ghoulionBar.active{
+position:relative;
+overflow:hidden;
+background:linear-gradient(90deg,#2a1a00,#3a2000,#2a1a00);
+color:#ffcc66;
+box-shadow:0 0 12px rgba(255,140,0,0.6);
+}
+
+/* 🔥 moving flame glow */
+.ghoulionBar.active::before{
+content:"";
+position:absolute;
+top:0;
+left:-100%;
+width:200%;
+height:100%;
+background:linear-gradient(
+120deg,
+transparent,
+rgba(255,120,0,0.4),
+rgba(255,200,0,0.3),
+transparent
+);
+animation: flameMove 2s linear infinite;
+}
+
+/* 🔥 pulse heat effect */
+.ghoulionBar.active{
+animation: heatPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes flameMove{
+0%{left:-100%;}
+100%{left:100%;}
+}
+
+@keyframes heatPulse{
+0%{box-shadow:0 0 6px rgba(255,140,0,0.4);}
+50%{box-shadow:0 0 16px rgba(255,140,0,0.9);}
+100%{box-shadow:0 0 6px rgba(255,140,0,0.4);}
+}
   
 </style>
 </head>
@@ -1373,39 +1415,104 @@ function updateGhoulion(){
 let now = new Date();
 
 let diff = now - ghoulionStart;
+let cycles = Math.floor(diff / ghoulionInterval);
+let currentStart = new Date(ghoulionStart.getTime() + cycles * ghoulionInterval);
+let nextStart = new Date(currentStart.getTime() + ghoulionInterval);
 
-let cycles = Math.floor(diff / ghoulionInterval) + 1;
+let timeToStart = currentStart - now;
+let timeSinceStart = now - currentStart;
 
-let next = new Date(ghoulionStart.getTime() + cycles * ghoulionInterval);
+let el = document.getElementById("ghoulionTimer");
 
-let remaining = next - now;
+let h, m;
+let localTime;
 
-let h = Math.floor(remaining / 1000 / 60 / 60);
-let m = Math.floor((remaining / 1000 / 60) % 60);
+/* ---------- BEFORE START ---------- */
 
-let localTime = next.toLocaleTimeString([],{
-hour:'numeric',
+if(timeToStart > 0){
+
+let remaining = timeToStart;
+
+h = Math.floor(remaining / 1000 / 60 / 60);
+m = Math.floor((remaining / 1000 / 60) % 60);
+
+localTime = currentStart.toLocaleTimeString([],{
+hour:'2-digit',
 minute:'2-digit',
-hour12: true  
+hour12:true
 });
 
-let timerText = "";
-
-if(remaining < 30*60*1000){
-
-timerText =
+if(h === 0 && m < 30){
+el.innerHTML =
 "<div class='ghoulionBar alert'>⚠ Get Ready • "+localTime+
-" • "+h+"h "+m+"m"+"</div>";
-
+" • "+h+"h "+m+"m</div>";
 }else{
-
-timerText =
-"<div class='ghoulionBar'> Next Hunt • "+localTime+
-" • "+h+"h "+m+"m"+"</div>";
-
+el.innerHTML =
+"<div class='ghoulionBar'>Next Hunt • "+localTime+
+" • "+h+"h "+m+"m</div>";
 }
 
-document.getElementById("ghoulionTimer").innerHTML = timerText;
+return;
+}
+
+/* ---------- ACTIVE RAID (0–25 min) ---------- */
+
+if(timeSinceStart >= 0 && timeSinceStart < 25*60*1000){
+
+let remaining = (25*60*1000) - timeSinceStart;
+
+h = Math.floor(remaining / 1000 / 60 / 60);
+m = Math.floor((remaining / 1000 / 60) % 60);
+
+el.innerHTML =
+"<div class='ghoulionBar active'>Next Hunt • "
+currentStart.toLocaleTimeString([],{
+hour:'2-digit',
+minute:'2-digit',
+hour12:true
+})+
+" • "+h+"h "+m+"m</div>";
+
+return;
+}
+
+/* ---------- WRAP PHASE (25–30 min) ---------- */
+
+if(timeSinceStart >= 25*60*1000 && timeSinceStart < 30*60*1000){
+
+let remaining = (30*60*1000) - timeSinceStart;
+
+h = Math.floor(remaining / 1000 / 60 / 60);
+m = Math.floor((remaining / 1000 / 60) % 60);
+
+el.innerHTML =
+"<div class='ghoulionBar'>Next Hunt • "+
+currentStart.toLocaleTimeString([],{
+hour:'2-digit',
+minute:'2-digit',
+hour12:true
+})+
+" • "+h+"h "+m+"m</div>";
+
+return;
+}
+
+/* ---------- NEXT CYCLE ---------- */
+
+let remaining = nextStart - now;
+
+h = Math.floor(remaining / 1000 / 60 / 60);
+m = Math.floor((remaining / 1000 / 60) % 60);
+
+localTime = nextStart.toLocaleTimeString([],{
+hour:'2-digit',
+minute:'2-digit',
+hour12:true
+});
+
+el.innerHTML =
+"<div class='ghoulionBar'>Next Hunt • "+localTime+
+" • "+h+"h "+m+"m</div>";
 
 }
 

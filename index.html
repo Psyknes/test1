@@ -1170,9 +1170,16 @@ let timeText = "";
 let hasPowerPlay = t.events.includes("Power Play");
 
 if(hasPowerPlay){
+if(hasPowerPlay){
 let h = t.times.find(x => x !== "ALL");
+
+if(h !== undefined){
 timeText = formatToLocalTime(h, t.d);
+}else{
+timeText = "All Day";
 }
+}
+  
 else if(t.times.includes("ALL")){
 timeText = "All Day";
 }
@@ -1210,8 +1217,14 @@ let hasPowerPlay = t.events.includes("Power Play");
 
 if(hasPowerPlay){
 let h = t.times.find(x => x !== "ALL");
+
+if(h !== undefined){
 timeText = formatToLocalTime(h, t.d);
+}else{
+timeText = "All Day";
 }
+}
+  
 else if(t.times.includes("ALL")){
 timeText = "All Day";
 }

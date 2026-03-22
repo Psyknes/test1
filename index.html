@@ -759,7 +759,9 @@ animation: heatPulse 1.5s ease-in-out infinite;
 
 function getLocalDay(hourUTC, dayStr){
 
-if(hourUTC === "ALL") return dayStr;
+if(hourUTC === "ALL" || hourUTC === undefined){
+return dayStr;   // 🔥 FIX
+}
 
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
@@ -1286,17 +1288,26 @@ container.innerHTML = "";
 double.sort((a,b)=>{
 
 function getNextTime(t){
+
+let now = new Date();
+
 let h = t.times.find(x => x !== "ALL");
-if(!h) return Infinity;
 
-let date = new Date();
+// ALL-day → push slightly below active timed tasks
+if(!h){
+let d = new Date();
+d.setHours(23,59,59,999);
+return d.getTime();
+}
 
+// parse hour
 if(typeof h === "string" && h.includes(":")){
 h = Number(h.split(":")[0]);
 }else{
 h = Number(h);
 }
 
+let date = new Date();
 date.setUTCHours(h,0,0,0);
 
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];

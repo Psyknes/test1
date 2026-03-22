@@ -924,7 +924,8 @@ return;
 }
 
 let e = data.event;   // ✅ DEFINE FIRST
-document.getElementById("ghoulionTitle").innerText = e.name;  
+document.getElementById("ghoulionTitle").innerText = e.name;
+document.getElementById("ghoulionTitle").style.color = e.color || "#ffd54f";  
 
 // 🔥 NOW SAFE TO USE
 let imgName = e.name.toLowerCase().replace(/\s+/g,"_");

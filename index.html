@@ -1448,43 +1448,43 @@ el.innerHTML = "No upcoming tasks";
 }
   
 
-// 🔹 INITIAL RENDER (static UI)
-renderTriple();
-renderDouble();  
-
-// 🔹 LOAD DATA FIRST
+// 🔹 LOAD ANNOUNCEMENT (can run independently)
 loadTicker();
-loadSpecialEvents();
-loadTasks();        // ✅ NEW
-loadPrep();         // ✅ NEW  
+setInterval(loadTicker, 60000); // every 1 min
 
-// 🔹 INITIAL UI UPDATE
-updateSpecialBar();
-updateLongEventTicker();  
-updateDoubleTimer();
-updateTodayPanel();
+// 🔹 LOAD ALL CORE DATA FIRST (CRITICAL FIX)
+Promise.all([
+  loadTasks(),
+  loadPrep(),
+  loadSpecialEvents()
+]).then(() => {
 
-// 🔹 1 SECOND LOOP (timers)
-setInterval(function(){
+  // 🔹 INITIAL RENDER (after data is ready)
+  renderTriple();
+  renderDouble();
 
-updateSpecialBar();
-updateDoubleTimer();
-updateTodayPanel();
+  updateSpecialBar();
+  updateLongEventTicker();
+  updateDoubleTimer();
+  updateTodayPanel();
 
-},1000);
+  // 🔹 1 SECOND LOOP (timers only)
+  setInterval(function(){
+    updateSpecialBar();
+    updateDoubleTimer();
+    updateTodayPanel();
+  }, 1000);
 
-// 🔹 1 MIN LOOP (ticker fetch)
-setInterval(loadTicker, 60000);
+  // 🔹 LONG EVENT TICKER REFRESH (5 mins)
+  setInterval(updateLongEventTicker, 300000);
 
-setInterval(updateLongEventTicker, 300000); // every 5 min  
+  // 🔹 UI REFRESH (5 mins)
+  setInterval(function(){
+    renderTriple();
+    renderDouble();
+  }, 300000);
 
-// 🔹 5 MIN LOOP (UI refresh)
-setInterval(function(){
-
-renderTriple();
-renderDouble();
-
-}, 300000);  
+});
   
 function updateTodayPanel(){
 

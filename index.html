@@ -996,7 +996,33 @@ function updateLongEventTicker(){
 
 let now = new Date();
 
-let longEvents = specialEvents.filter(e => !e.short && e.active);
+let longEvents = specialEvents
+  .filter(e => !e.short && e.active)
+  .map(e => {
+
+    let end = new Date(e.end);
+    let start = new Date(e.start || 0);
+
+    return {
+      ...e,
+      end,
+      start,
+      isActive: now >= start && now <= end,
+      timeToStart: start - now
+    };
+  });
+
+// 🔥 PRIORITY LOGIC
+let activeEvents = longEvents.filter(e => e.isActive);
+
+if(activeEvents.length){
+  longEvents = activeEvents;
+}else{
+  longEvents = longEvents
+    .filter(e => e.timeToStart > 0)
+    .sort((a,b)=> a.timeToStart - b.timeToStart)
+    .slice(0,1);
+}
 
 let html = "";
 
@@ -1225,8 +1251,25 @@ let container = document.getElementById("doubleList");
 
 container.innerHTML = "";
 
-double.forEach(t => {
+double.sort((a,b)=>{
 
+let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+let d1 = days.indexOf(a.d);
+let d2 = days.indexOf(b.d);
+
+if(d1 !== d2) return d1 - d2;
+
+// secondary sort by time
+let t1 = a.times.find(x => x !== "ALL") || "99:99";
+let t2 = b.times.find(x => x !== "ALL") || "99:99";
+
+return t1.localeCompare(t2);
+
+});  
+
+double.forEach(t => {
+  
 let row = document.createElement("div");
 row.className = "row";
 
@@ -1372,7 +1415,6 @@ let timing = getTaskTiming(t);
 
 if(timing.active && !selected){
 selected = {task:t, timing};
-return;
 }
 
 if(timing.next){
@@ -1380,7 +1422,6 @@ if(!soonest || timing.next.start < soonest.timing.next.start){
 soonest = {task:t, timing};
 }
 }
-return;
 }
 
 let timing = getTaskTiming(t);

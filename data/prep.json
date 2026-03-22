@@ -1,0 +1,28 @@
+{
+  "S Tier Dispatch": {
+    "itemPrep": true,
+    "activityPrep": false,
+    "saveItemType": "Refresh Hourglass",
+    "allianceHelp": true,
+    "prepComment": "Obtain refresh items from truck raids and daily task chests.",
+    "tip": "Obtain refresh items from truck raids and daily task chests\n- Use them during event to improve task quality\nRequest alliance assistance and share in alliance chat\n- Each member can assist once per task"
+  },
+
+  "Hero Frags": {
+    "itemPrep": true,
+    "activityPrep": false,
+    "saveItemType": "Hero Fragments",
+    "allianceHelp": false,
+    "prepComment": "Obtain fragments from recruitment, events, and stores.\nComplete free recruitments.",
+    "tip": "Obtain fragments from recruitment, events, and stores\n- Check stores regularly for discounted fragments\nUse free recruitment daily\n- Save fragments for event usage"
+  },
+
+  "Train Speed": {
+    "itemPrep": false,
+    "activityPrep": false,
+    "saveItemType": "Speed ups",
+    "allianceHelp": false,
+    "prepComment": "",
+    "tip": "Activate training capacity boost before queueing troops\n- Applies to all barracks\nUse power plant training boost when multiple queues are active\n- Maximizes total time reduction"
+  }
+}

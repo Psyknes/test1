@@ -68,18 +68,20 @@ white-space:nowrap;
 background:#0f0f0f;
 font-size:13px;          /* slightly bigger text */
 border-bottom:1px solid #222;
-padding:4px 0;           /* NEW → gives breathing room */
+display:flex;              /* NEW */
+align-items:center;        /* vertical center */
+height:32px;               /* controlled height */
 }
 
 .eventScroll{
-display:inline-block;
-padding-left:100%;
-animation: scrollTicker 40s linear infinite;
+display:flex;              /* change from inline-block */
+align-items:center;        /* center vertically */
+animation: scrollTicker 45s linear infinite;
 }
 
 .eventItem{
 margin-right:50px;      /* was 40px */
-display:inline-flex;
+display:flex;
 align-items:center;
 gap:6px;
 }

@@ -1087,19 +1087,19 @@ console.log("Sample task:", rawData[0]);
 
 rawData.forEach(e => {
 
-let key = e.d + "|" + e.task;
+let key = e.d + "|" + e.t;
 
 if(!map[key]){
 map[key] = {
 d: e.d,
-task: e.task,
+task: e.t,
 times: [],
 events: []
 };
 }
 
-map[key].times.push(e.time);
-map[key].events.push(e.event);
+map[key].times.push(e.utc);
+map[key].events.push(e.e);
 
 });
 

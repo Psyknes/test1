@@ -1272,10 +1272,12 @@ let next = null;
 
 task.times.forEach(h => {
 
-if(h === "ALL") return; // ✅ skip all-day tasks
+if(h === "ALL" || h === undefined) return; // ✅ safer
+
+h = Number(h);  // 🔥 CRITICAL FIX
 
 let start = new Date();
-start.setUTCHours(h,0,0,0);
+start.setUTCHours(h, 0, 0, 0);
 
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let taskDay = days.indexOf(task.d);

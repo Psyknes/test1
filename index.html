@@ -1134,6 +1134,12 @@ return {triple, double};
 
 function formatToLocalTime(hourUTC, dayStr){
 
+if(hourUTC === "ALL" || hourUTC === undefined){
+return "All Day";
+}
+
+hourUTC = Number(hourUTC);
+
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let targetDay = days.indexOf(dayStr);
 

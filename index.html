@@ -1290,7 +1290,11 @@ task.times.forEach(h => {
 
 if(h === undefined) return;
 
+if(typeof h === "string" && h.includes(":")){
+h = Number(h.split(":")[0]);
+}else{
 h = Number(h);
+}
 
 let start = new Date();
 start.setUTCHours(h, 0, 0, 0);
@@ -1411,11 +1415,17 @@ return;
   
 if(timing.active){
 
-let start = timing.active.start.toLocaleTimeString([],{
+let start = "";
+
+if(timing.active && timing.active.start){
+start = timing.active.start.toLocaleTimeString([],{
 hour:'2-digit',
 minute:'2-digit',
 hour12: true  
 });
+}else{
+start = "All Day";
+}
 
 let end = timing.active.end.toLocaleTimeString([],{
 hour:'2-digit',
@@ -1516,11 +1526,17 @@ return;
   
 if(timing.active){
 
-let start = timing.active.start.toLocaleTimeString([],{
+let start = "";
+
+if(timing.active && timing.active.start){
+start = timing.active.start.toLocaleTimeString([],{
 hour:'2-digit',
 minute:'2-digit',
 hour12: true  
 });
+}else{
+start = "All Day";
+}
 
 let end = timing.active.end.toLocaleTimeString([],{
 hour:'2-digit',

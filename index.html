@@ -1778,7 +1778,7 @@ let now = new Date();
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let today = days[now.getUTCDay()];
 
-let {triple, double} = getTasks();
+let {triple, double, dayExclusive} = getTasks();
 
 let container = document.getElementById("todayPanel");
 

@@ -1050,10 +1050,16 @@ let activeEvents = longEvents.filter(e => e.isActive);
 if(activeEvents.length){
   longEvents = activeEvents;
 }else{
-  longEvents = longEvents
-    .filter(e => e.timeToStart > 0)
-    .sort((a,b)=> a.timeToStart - b.timeToStart)
-    .slice(0,1);
+
+// 🔥 ONLY future events
+let upcoming = longEvents.filter(e => e.timeToStart > 0);
+
+// 🔥 SORT by nearest
+upcoming.sort((a,b)=> a.timeToStart - b.timeToStart);
+
+// 🔥 TAKE ONLY THE NEXT ONE
+longEvents = upcoming.length ? [upcoming[0]] : [];
+
 }
 
 let html = "";
@@ -1449,6 +1455,12 @@ soonest = {task:t, time:nextTime};
 // fallback
 if(!selected && soonest){
 selected = soonest;
+}
+
+// 🔥 HARD FALLBACK (ADD THIS RIGHT BELOW)
+if(!selected && triple.length){
+let nextTime = getNextOccurrence(triple[0]);
+selected = {task: triple[0], time: nextTime};
 }
 
 if(!selected){

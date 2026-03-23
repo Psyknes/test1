@@ -1040,6 +1040,8 @@ let longEvents = specialEvents
     };
   });
 
+longEvents = longEvents.filter(e => e.end > now);
+  
 // 🔥 PRIORITY LOGIC
 let activeEvents = longEvents.filter(e => e.isActive);
 
@@ -1218,6 +1220,45 @@ hour12:true
 });
 
 }
+
+function getNextOccurrence(task){
+
+let now = new Date();
+let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+let h = task.times.find(x => x !== "ALL");
+
+// ALL DAY → treat as current day end
+if(!h){
+let d = new Date();
+d.setHours(23,59,59,999);
+return d;
+}
+
+// parse hour
+if(typeof h === "string" && h.includes(":")){
+h = Number(h.split(":")[0]);
+}else{
+h = Number(h);
+}
+
+// base UTC time
+let date = new Date();
+date.setUTCHours(h,0,0,0);
+
+// align to correct weekday
+let diff = days.indexOf(task.d) - date.getUTCDay();
+if(diff < 0) diff += 7;
+
+date.setUTCDate(date.getUTCDate() + diff);
+
+// 🔥 KEY FIX: if already passed → move to NEXT WEEK
+if(date < now){
+date.setUTCDate(date.getUTCDate() + 7);
+}
+
+return date;
+}
   
 function renderTriple(){
 
@@ -1265,7 +1306,9 @@ timeText = "All Day";
   
 let h = t.times.find(x => x !== "ALL");
 
-let displayDay = getLocalDay(h, t.d);
+let next = getNextOccurrence(t);
+
+let displayDay = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][next.getDay()];
 
 row.innerHTML = `
 <span>${displayDay}</span>
@@ -1286,41 +1329,7 @@ let container = document.getElementById("doubleList");
 container.innerHTML = "";
 
 double.sort((a,b)=>{
-
-function getNextTime(t){
-
-let now = new Date();
-
-let h = t.times.find(x => x !== "ALL");
-
-// ALL-day → push slightly below active timed tasks
-if(!h){
-let d = new Date();
-d.setHours(23,59,59,999);
-return d.getTime();
-}
-
-// parse hour
-if(typeof h === "string" && h.includes(":")){
-h = Number(h.split(":")[0]);
-}else{
-h = Number(h);
-}
-
-let date = new Date();
-date.setUTCHours(h,0,0,0);
-
-let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let diff = days.indexOf(t.d) - date.getUTCDay();
-if(diff < 0) diff += 7;
-
-date.setUTCDate(date.getUTCDate()+diff);
-
-return date.getTime();
-}
-
-return getNextTime(a) - getNextTime(b);
-
+return getNextOccurrence(a) - getNextOccurrence(b);
 });  
 
 double.forEach(t => {
@@ -1363,7 +1372,9 @@ timeText = "All Day";
 
 let h = t.times.find(x => x !== "ALL");
 
-let displayDay = getLocalDay(h, t.d);
+let next = getNextOccurrence(t);
+
+let displayDay = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][next.getDay()];
 
 row.innerHTML = `
 <span>${displayDay}</span>
@@ -1476,10 +1487,10 @@ if(timing.active && !selected){
 selected = {task:t, timing};
 }
 
-if(timing.next){
-if(!soonest || timing.next.start < soonest.timing.next.start){
-soonest = {task:t, timing};
-}
+let nextTime = getNextOccurrence(t);
+
+if(!soonest || nextTime < soonest.time){
+soonest = {task:t, time:nextTime};
 }
 }
 
@@ -1491,10 +1502,10 @@ selected = {task:t, timing};
 }
 
 // PRIORITY 2 → NEXT SOONEST
-if(timing.next){
-if(!soonest || timing.next.start < soonest.timing.next.start){
-soonest = {task:t, timing};
-}
+let nextTime = getNextOccurrence(t);
+
+if(!soonest || nextTime < soonest.time){
+soonest = {task:t, time:nextTime};
 }
 
 });
@@ -1518,7 +1529,7 @@ let task = selected.task;
 let timing = selected.timing;
 let hasPowerPlay = task.events.includes("Power Play");
 
-if(!hasPowerPlay && task.times.includes("ALL")){
+if(task.times.includes("ALL") && !task.events.includes("Power Play")){
 timer.innerHTML =
 "<small>⚡ ACTIVE</small><br><b>"+task.task+"</b><br>All Day";
 return;
@@ -1553,9 +1564,9 @@ end = "All Day";
 timer.innerHTML =
 "<small>⚡ ACTIVE</small><br><b>"+task.task+"</b><br>"+start+" - "+end;
 
-}else if(timing.next){
+}else if(soonest){
 
-let diff = timing.next.start - new Date();
+let diff = soonest.time - new Date();
 
 let h = Math.floor(diff/1000/60/60);
 let m = Math.floor((diff/1000/60)%60);
@@ -1598,10 +1609,10 @@ selected = {task:t, timing};
 return;
 }
 
-if(timing.next){
-if(!soonest || timing.next.start < soonest.timing.next.start){
-soonest = {task:t, timing};
-}
+let nextTime = getNextOccurrence(t);
+
+if(!soonest || nextTime < soonest.time){
+soonest = {task:t, time:nextTime};
 }
 return;
 }
@@ -1614,10 +1625,10 @@ selected = {task:t, timing};
 }
 
 // PRIORITY 2 → NEXT SOONEST
-if(timing.next){
-if(!soonest || timing.next.start < soonest.timing.next.start){
-soonest = {task:t, timing};
-}
+let nextTime = getNextOccurrence(t);
+
+if(!soonest || nextTime < soonest.time){
+soonest = {task:t, time:nextTime};
 }
 
 });
@@ -1634,7 +1645,7 @@ let task = selected.task;
 let timing = selected.timing;
 let hasPowerPlay = task.events && task.events.includes("Power Play");
 
-if(!hasPowerPlay && task.times.includes("ALL")){
+if(task.times.includes("ALL") && !task.events.includes("Power Play")){
 el.innerHTML =
 "<small>🔹 ACTIVE</small><br><b>"+task.task+"</b><br>"+
 "All Day • " + getDayCountdown();
@@ -1672,9 +1683,9 @@ el.innerHTML =
 "<small style='opacity:.7'>"+[...new Set(task.events)].join(" | ")+"</small><br>"+
 (hasPowerPlay ? (start+" - "+end) : ("All Day • " + getDayCountdown()));
 
-}else if(timing.next){
+}else if(soonest){
 
-let diff = timing.next.start - new Date();
+let diff = soonest.time - new Date();
 
 let h = Math.floor(diff/1000/60/60);
 let m = Math.floor((diff/1000/60)%60);

@@ -76,7 +76,7 @@ height:32px;               /* controlled height */
 .eventScroll{
 display:flex;              /* change from inline-block */
 align-items:center;        /* center vertically */
-animation: scrollTicker 30s linear infinite;
+animation: scrollTicker 40s linear infinite;
 }
 
 .eventItem{
@@ -1044,33 +1044,33 @@ longEvents = longEvents.filter(e => e.end > now);
 
   
 // 🔥 PRIORITY LOGIC
-let activeEvents = longEvents.filter(e => e.isActive);
+//let activeEvents = longEvents.filter(e => e.isActive);
 
-if(activeEvents.length){
+//if(activeEvents.length){
 
 // 🔥 SORT active events by priority
-activeEvents.sort((a,b)=> (a.priority || 999) - (b.priority || 999));
+//activeEvents.sort((a,b)=> (a.priority || 999) - (b.priority || 999));
 
 // 🔥 TAKE ONLY TOP PRIORITY
-longEvents = [activeEvents[0]];
-}else{
+//longEvents = [activeEvents[0]];
+//}else{
 
 // 🔥 ONLY future events
-let upcoming = longEvents.filter(e => {
+//let upcoming = longEvents.filter(e => {
 
 
 // 🔥 must not have already started
-return e.start > now;
+//return e.start > now;
 
-});
+//});
 
 // 🔥 SORT by nearest
-upcoming.sort((a,b)=> a.start.getTime() - b.start.getTime());
+//upcoming.sort((a,b)=> a.start.getTime() - b.start.getTime());
 
 // 🔥 TAKE ONLY THE NEXT ONE
-longEvents = upcoming.length ? [upcoming[0]] : [];
+//longEvents = upcoming.length ? [upcoming[0]] : [];
 
-}
+//}
 
 let html = "";
 

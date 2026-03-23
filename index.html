@@ -1042,7 +1042,6 @@ let longEvents = specialEvents
 
 longEvents = longEvents.filter(e => e.end > now);
 
-longEvents = longEvents.filter(e => e.isActive || e.timeToStart > 0);  
   
 // 🔥 PRIORITY LOGIC
 let activeEvents = longEvents.filter(e => e.isActive);
@@ -1057,10 +1056,16 @@ longEvents = [activeEvents[0]];
 }else{
 
 // 🔥 ONLY future events
-let upcoming = longEvents.filter(e => e.timeToStart > 0);
+let upcoming = longEvents.filter(e => {
+
+
+// 🔥 must not have already started
+return e.start > now;
+
+});
 
 // 🔥 SORT by nearest
-upcoming.sort((a,b)=> a.timeToStart - b.timeToStart);
+upcoming.sort((a,b)=> a.start.getTime() - b.start.getTime());
 
 // 🔥 TAKE ONLY THE NEXT ONE
 longEvents = upcoming.length ? [upcoming[0]] : [];

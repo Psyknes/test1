@@ -1658,12 +1658,14 @@ Promise.all([
 
   updateSpecialBar();
   updateLongEventTicker();
+  updateTimer();
   updateDoubleTimer();
   updateTodayPanel();
 
   // 🔹 1 SECOND LOOP (timers only)
   setInterval(function(){
     updateSpecialBar();
+    updateTimer();
     updateDoubleTimer();
     updateTodayPanel();
   }, 1000);

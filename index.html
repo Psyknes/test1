@@ -1557,6 +1557,77 @@ container.appendChild(row);
 });
 
 }
+
+function renderSaveList(){
+
+let {triple, double, dayExclusive} = getTasks();
+let container = document.getElementById("saveList");
+
+container.innerHTML = "";
+
+// 🔥 combine all tasks
+let allTasks = [...triple, ...double, ...dayExclusive];
+
+// 🔥 group by task
+let map = {};
+
+allTasks.forEach(t => {
+
+let p = prepData[t.task];
+
+if(!p || !p.saveItemType) return;
+
+if(!map[t.task]){
+map[t.task] = {
+days: [],
+item: p.saveItemType
+};
+}
+
+map[t.task].days.push(t.d);
+
+});
+
+// 🔥 SORT (same smart logic as Day Exclusive)
+let order = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+let todayIndex = new Date().getUTCDay();
+
+function getNextIndex(days){
+let indices = days.map(d => order.indexOf(d));
+let diffs = indices.map(i => (i - todayIndex + 7) % 7);
+return Math.min(...diffs);
+}
+
+Object.keys(map)
+.sort((a,b)=> getNextIndex(map[a].days) - getNextIndex(map[b].days))
+.forEach(task => {
+
+let days = map[task].days;
+
+// sort days nicely
+days.sort((a,b)=> order.indexOf(a) - order.indexOf(b));
+
+let row = document.createElement("div");
+row.className = "row";
+
+row.innerHTML = `
+<span>${task}</span>
+<span>${days.join(" | ")}</span>
+`;
+
+container.appendChild(row);
+
+// 🔥 ADD SAVE ITEM BELOW (your requirement)
+let item = document.createElement("div");
+item.className = "prepComment";
+item.style.marginLeft = "6px";
+item.innerText = "Save: " + map[task].item;
+
+container.appendChild(item);
+
+});
+
+}  
   
 function getTaskTiming(task){
 return {active:null, next:null};
@@ -1806,6 +1877,7 @@ Promise.all([
   renderTriple();
   renderDouble();
   renderDayExclusive();
+  renderSaveList();
 
   updateSpecialBar();
   updateLongEventTicker();
@@ -1829,6 +1901,7 @@ Promise.all([
     renderTriple();
     renderDouble();
     renderDayExclusive();
+    renderSaveList();
   }, 300000);
 
 });

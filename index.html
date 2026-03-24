@@ -1830,9 +1830,10 @@ status = "✔ Completed";
 html += `
 <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}" style="font-size:13px;">
 <span><b>◆ Triple</b> - ${t.task}</span>
-${p?.tip ? `<div class="prepTip">${p.tip}</div>` : ""}
 <span style="font-size:12px;opacity:.85">${status}</span>
 </div>
+
+${p?.tip ? `<div class="prepTip">${p.tip}</div>` : ""}
 `;
 }
 

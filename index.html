@@ -1501,7 +1501,50 @@ container.appendChild(row);
 
 }
   
- 
+function renderDayExclusive(){
+
+let {dayExclusive} = getTasks();
+
+let container = document.getElementById("dayExclusiveList");
+
+container.innerHTML = "";
+
+// 🔥 group by task name
+let map = {};
+
+dayExclusive.forEach(t => {
+
+if(!map[t.task]){
+map[t.task] = [];
+}
+
+map[t.task].push(t.d);
+
+});
+
+// 🔥 render grouped output
+Object.keys(map).forEach(task => {
+
+let days = map[task];
+
+// sort days (Sun → Sat)
+let order = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+days.sort((a,b)=> order.indexOf(a) - order.indexOf(b));
+
+let row = document.createElement("div");
+row.className = "row";
+
+row.innerHTML = `
+<span>${days.join(" | ")}</span>
+<span>${task}</span>
+`;
+
+container.appendChild(row);
+
+});
+
+}
+  
 function getTaskTiming(task){
 return {active:null, next:null};
 }
@@ -1749,6 +1792,7 @@ Promise.all([
   // 🔹 INITIAL RENDER (after data is ready)
   renderTriple();
   renderDouble();
+  renderDayExclusive();
 
   updateSpecialBar();
   updateLongEventTicker();
@@ -1771,6 +1815,7 @@ Promise.all([
   setInterval(function(){
     renderTriple();
     renderDouble();
+    renderDayExclusive();
   }, 300000);
 
 });

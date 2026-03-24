@@ -1405,6 +1405,9 @@ isActive: false
 function renderTriple(){
 
 let {triple} = getTasks();
+triple.sort((a,b)=>{
+  return getNextOccurrence(a) - getNextOccurrence(b);
+});
 let container = document.getElementById("tripleList");
 
 container.innerHTML = "";

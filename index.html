@@ -1895,6 +1895,7 @@ return;
 
 let task = selected.task;
 let nextTime = selected.time;
+let label = document.getElementById("doubleLabel");  
 
 
 // 🔥 detect ALL DAY correctly
@@ -1915,11 +1916,15 @@ isActive = true;
 
 if(isActive){
 
+label.innerHTML = "Double Chain • 🔹 ACTIVE";
+
 let start = new Date(nextTime.getTime() - 4 * 60 * 60 * 1000);
 
+let events = [...new Set(task.events)].join(" | ");
+
 el.innerHTML =
-"<small>🔹 ACTIVE</small><br><b>"+task.task+"</b><br>"+
-"<small style='opacity:.7'>"+[...new Set(task.events)].join(" | ")+"</small><br>"+
+"<b>"+task.task+"</b><br>"+
+"<small style='opacity:.7'>" + events + "</small><br>"+
 start.toLocaleTimeString([],{
 hour:'2-digit',
 minute:'2-digit',
@@ -1944,8 +1949,13 @@ minute:'2-digit',
 hour12:true
 });
 
+label.innerHTML = "Double Chain • Next";
+
+let events = [...new Set(task.events)].join(" | ");
+
 el.innerHTML =
 "<b>"+task.task+"</b><br>"+
+"<small style='opacity:.7'>" + events + "</small><br>"+
 (isAllDay 
   ? ("All Day • " + getDayCountdown()) 
   : (timeStr + " • " + h+"h "+m+"m")
@@ -2021,30 +2031,35 @@ if(todayTriple.length){
 let t = todayTriple[0];
 let p = prepMap[t.task]; 
 
-let nextTime = getNextOccurrence(t);
-
 let status = "";
 
-// 🔥 ACTIVE (Power Play window)
-let isActive = false;
-
 if(t.events.includes("Power Play")){
-let start = new Date(nextTime.getTime() - 4 * 60 * 60 * 1000);
-if(now >= start && now <= nextTime){
-isActive = true;
-}
+
+// 🔥 get TODAY's actual time (NOT next occurrence)
+let h = t.times.find(x => x !== "ALL");
+
+if(typeof h === "string" && h.includes(":")){
+  h = Number(h.split(":")[0]);
+}else{
+  h = Number(h);
 }
 
-// 🔥 STATUS LOGIC
-if(isActive){
-status = "⚡ ACTIVE";
+let eventTime = new Date();
+eventTime.setHours(h,0,0,0);
+
+let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
+
+// 🔥 status logic
+if(now >= start && now <= eventTime){
+  status = "⚡ ACTIVE";
 }
-else if(nextTime > now){
-status = "⭐ Upcoming";
+else if(now < start){
+  status = "⭐ Upcoming";
 }
 else{
-status = "✔ Completed";
+  status = "✔ Completed • → Double Active";
 }
+
 
 html += `
 <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}" style="font-size:13px; border-bottom:none;">
@@ -2065,33 +2080,38 @@ if(todayDouble.length){
 let t = todayDouble[0];
 let p = prepMap[t.task];
 
-let nextTime = getNextOccurrence(t);
-
 let status = "";
 
-// 🔥 ALL DAY
-if(t.times.includes("ALL") && !t.events.includes("Power Play")){
-status = "🔹 ACTIVE";
-}
-else{
-
-let isActive = false;
-
 if(t.events.includes("Power Play")){
-let start = new Date(nextTime.getTime() - 4 * 60 * 60 * 1000);
-if(now >= start && now <= nextTime){
-isActive = true;
-}
+
+let h = t.times.find(x => x !== "ALL");
+
+if(typeof h === "string" && h.includes(":")){
+  h = Number(h.split(":")[0]);
+}else{
+  h = Number(h);
 }
 
-if(isActive){
-status = "🔹 ACTIVE";
+let eventTime = new Date();
+eventTime.setHours(h,0,0,0);
+
+let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
+
+if(now >= start && now <= eventTime){
+  status = "🔹 ACTIVE";
 }
-else if(nextTime > now){
-status = "⭐ Upcoming";
+else if(now < start){
+  status = "⭐ Upcoming";
 }
 else{
-status = "✔ Completed";
+  status = "✔ Completed";
+}
+
+}else{
+
+// 🔥 no power play → active all day
+status = "🔹 ACTIVE";
+
 }
 
 }

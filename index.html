@@ -343,8 +343,8 @@ animation: emblemGlow 3.5s infinite ease-in-out;
 }
 
 .leaderImg{
-height:80px;
-width:80px;              /* must match logo */
+height:50px;
+width:50px;              /* must match logo */
 object-fit:contain;
 display:block;
 }  
@@ -659,7 +659,9 @@ display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-width:80px;   /* match logo width */
+width:80px;
+height:80px;   /* 🔥 IMPORTANT */
+text-align:center;
 }
 
 .leaderName{
@@ -673,6 +675,15 @@ line-height:1.1;
 font-size:10px;
 opacity:.6;
 line-height:1;
+}
+
+.logoBox{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+width:80px;
+height:80px;
 }
   
 </style>
@@ -690,7 +701,9 @@ line-height:1;
   
 <div class="headerBar">
 
-<img src="chillin_logo.png" class="allianceLogo">
+<div class="logoBox">
+  <img src="chillin_logo.png" class="allianceLogo">
+</div>
 
 <div class="headerText">
 <h1>Tiles Survive</h1>

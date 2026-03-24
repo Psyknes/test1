@@ -1523,7 +1523,18 @@ map[t.task].push(t.d);
 });
 
 // 🔥 render grouped output
-Object.keys(map).forEach(task => {
+Object.keys(map)
+.sort((a,b)=>{
+
+let order = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+let da = map[a][0];
+let db = map[b][0];
+
+return order.indexOf(da) - order.indexOf(db);
+
+})
+.forEach(task => {
 
 let days = map[task];
 

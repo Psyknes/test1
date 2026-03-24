@@ -1822,9 +1822,18 @@ let diff = nextTime - now;
 let h = Math.floor(diff/1000/60/60);
 let m = Math.floor((diff/1000/60)%60);
 
+let timeStr = nextTime.toLocaleTimeString([],{
+hour:'2-digit',
+minute:'2-digit',
+hour12:true
+});
+
 timer.innerHTML =
 "<b>"+task.task+"</b><br>"+
-(isAllDay ? ("All Day • " + getDayCountdown()) : (h+"h "+m+"m"));
+(isAllDay 
+  ? ("All Day • " + getDayCountdown()) 
+  : (timeStr + " • " + h+"h "+m+"m")
+);
 
 }
 }
@@ -1929,10 +1938,18 @@ let diff = nextTime - now;
 let h = Math.floor(diff/1000/60/60);
 let m = Math.floor((diff/1000/60)%60);
 
+let timeStr = nextTime.toLocaleTimeString([],{
+hour:'2-digit',
+minute:'2-digit',
+hour12:true
+});
+
 el.innerHTML =
-"<small>Next</small><br><b>"+task.task+"</b><br>"+
-"<small style='opacity:.7'>"+[...new Set(task.events)].join(" | ")+"</small><br>"+
-(isAllDay ? ("All Day • " + getDayCountdown()) : (h+"h "+m+"m"));
+"<b>"+task.task+"</b><br>"+
+(isAllDay 
+  ? ("All Day • " + getDayCountdown()) 
+  : (timeStr + " • " + h+"h "+m+"m")
+);
 
 }
 }  

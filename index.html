@@ -362,7 +362,9 @@ max-width:100%;
 }
 
 .hunterBox .timer{
-font-size:18px;
+font-size:14px;
+line-height:1.1;
+margin-top:0;
 }
 } 
   
@@ -397,11 +399,6 @@ align-items:center;
 justify-content:center;
 }
 
-.hunterBox .timer{
-font-size:15px;
-line-height:1.25;
-}
-
 .hunterBox b{
 font-size:16px;
 }
@@ -413,13 +410,10 @@ white-space: nowrap;
 .hunterLabel{
 font-size:12px;
 opacity:.8;
-margin-bottom:4px;
+margin-bottom:2px;
 text-align:center;
 }
 
-.hunterBox .timer{
-margin-top:2px;
-} 
   
 .tripleBox .hunterLabel{
 color:#ffd700;
@@ -711,13 +705,13 @@ margin-bottom:6px;
 <div class="hunterStack">
 
 <div class="hunterBox tripleBox">
-<div class="hunterLabel">Triple Chain</div>
-<div class="timer" id="timer"></div>
+  <div class="hunterLabel" id="tripleLabel">Triple Chain</div>
+  <div class="timer" id="timer"></div>
 </div>
 
 <div class="hunterBox doubleBox">
-<div class="hunterLabel">Double Chain</div>
-<div class="timer" id="doubleTimer"></div>
+  <div class="hunterLabel" id="doubleLabel">Double Chain</div>
+  <div class="timer" id="doubleTimer"></div>
 </div>
 
 </div>
@@ -1798,12 +1792,16 @@ isActive = true;
 }
 }
 
+let label = document.getElementById("tripleLabel");
+
 if(isActive){
+
+label.innerHTML = "Triple Chain • ⚡ ACTIVE";
 
 let start = new Date(nextTime.getTime() - 4 * 60 * 60 * 1000);
 
 timer.innerHTML =
-"<small>⚡ ACTIVE</small><br><b>"+task.task+"</b><br>"+
+"<b>"+task.task+"</b><br>"+
 start.toLocaleTimeString([],{
 hour:'2-digit',
 minute:'2-digit',
@@ -1817,17 +1815,18 @@ hour12:true
 
 }else{
 
+label.innerHTML = "Triple Chain • Next";
+
 let diff = nextTime - now;
 
 let h = Math.floor(diff/1000/60/60);
 let m = Math.floor((diff/1000/60)%60);
 
 timer.innerHTML =
-"<small>Next</small><br><b>"+task.task+"</b><br>"+
+"<b>"+task.task+"</b><br>"+
 (isAllDay ? ("All Day • " + getDayCountdown()) : (h+"h "+m+"m"));
 
 }
-
 }
 
 function updateDoubleTimer(){

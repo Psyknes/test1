@@ -764,22 +764,8 @@ margin-bottom:6px;
 </div>
 
 <div class="card save">
-<h2>⚔️ Last But Not Least</h2>
-
-<div class="row">
-<span>Hero Skill Manuals</span>
-<span>Thu</span>
-</div>
-
-<div class="row">
-<span>Troop Training Power Up</span>
-<span>Sat</span>
-</div>
-
-<div class="row">
-<span>Troop Training Speed Ups</span>
-<span>Sat</span>
-</div>
+<h2>⚔️ Casual Tasks</h2>
+<div id="casualList"></div>
 
 </div>
 
@@ -1639,7 +1625,61 @@ container.appendChild(item);
 });
 
 }  
-  
+function renderCasualTasks(){
+
+let container = document.getElementById("casualList");
+container.innerHTML = "";
+
+// 🔥 USE RAW DATA (important)
+let singles = rawData.filter(e => 
+  e.type === "Single" && !e.dayExclusive
+);
+
+// 🔥 group by task
+let map = {};
+
+singles.forEach(e => {
+
+if(!map[e.t]){
+map[e.t] = [];
+}
+
+map[e.t].push(e.d);
+
+});
+
+// 🔥 SORT (same smart logic)
+let order = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+let todayIndex = new Date().getUTCDay();
+
+function getNextIndex(days){
+let indices = days.map(d => order.indexOf(d));
+let diffs = indices.map(i => (i - todayIndex + 7) % 7);
+return Math.min(...diffs);
+}
+
+Object.keys(map)
+.sort((a,b)=> getNextIndex(map[a]) - getNextIndex(map[b]))
+.forEach(task => {
+
+let days = map[task];
+
+// sort days nicely
+days.sort((a,b)=> order.indexOf(a) - order.indexOf(b));
+
+let row = document.createElement("div");
+row.className = "row";
+
+row.innerHTML = `
+<span>${days.join(" | ")}</span>
+<span>${task}</span>
+`;
+
+container.appendChild(row);
+
+});
+
+}  
 function getTaskTiming(task){
 return {active:null, next:null};
 }
@@ -1889,6 +1929,7 @@ Promise.all([
   renderDouble();
   renderDayExclusive();
   renderSaveList();
+  renderCasualTasks();
 
   updateSpecialBar();
   updateLongEventTicker();
@@ -1913,6 +1954,7 @@ Promise.all([
     renderDouble();
     renderDayExclusive();
     renderSaveList();
+    renderCasualTasks();
   }, 300000);
 
 });

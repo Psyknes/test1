@@ -1140,7 +1140,18 @@ document.getElementById("eventTicker").innerHTML =
 async function loadTasks(){
 try{
 let res = await fetch("data/tasks.json");
-rawData = await res.json();
+let data = await res.json();
+
+rawData = data.map(e => ({
+  d: e.d,
+  task: e.t,
+  event: e.e,
+  category: e.category,
+  utc: e.utc,
+
+  // derived
+  dayExclusive: e.category === "Exclusive"
+}));
 
 console.log("Tasks loaded:", rawData);  
   
@@ -1240,12 +1251,12 @@ console.log("Sample task:", rawData[0]);
 
 rawData.forEach(e => {
 
-let key = e.d + "|" + e.t;
+let key = e.d + "|" + e.task;
 
 if(!map[key]){
 map[key] = {
 d: e.d,
-task: e.t,
+task: e.task,
 times: [],
 events: [],
 dayExclusive: e.dayExclusive === true  
@@ -1253,7 +1264,7 @@ dayExclusive: e.dayExclusive === true
 }
 
 map[key].times.push(e.utc);
-map[key].events.push(e.e);
+map[key].events.push(e.event);
 
 });
 

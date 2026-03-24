@@ -1844,6 +1844,7 @@ let todayDouble = double.filter(t => t.d === today);
 if(todayDouble.length){
 
 let t = todayDouble[0];
+let p = prepData[t.task];  
 
 let nextTime = getNextOccurrence(t);
 
@@ -1878,9 +1879,11 @@ status = "✔ Completed";
 
 html += `
 <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}" style="font-size:13px;">
-<span><b>◆ Double</b> - ${t.task}</span>
-<span style="font-size:12px;opacity:.85">${status}</span>
+  <span><b>◆ Double</b> - ${t.task}</span>
+  <span style="font-size:12px;opacity:.85">${status}</span>
 </div>
+
+${p?.tip ? `<div class="prepTip" style="margin-left:6px;">${p.tip}</div>` : ""}
 `;
 }
   

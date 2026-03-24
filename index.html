@@ -2118,8 +2118,6 @@ status = "🔹 ACTIVE";
 
 }
 
-}
-
 html += `
 <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}" style="font-size:13px; border-bottom:none;">
   <span><b>◆ Double</b> - ${t.task}</span>
@@ -2127,7 +2125,11 @@ html += `
 </div>
 
 ${p?.tip ? `<div class="prepTip saveItem" style="margin-left:6px;">${p.tip}</div>` : ""}
-`;
+`;  
+  
+}
+
+
 }
   
 /* ---------- DAY EXCLUSIVE ---------- */

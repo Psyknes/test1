@@ -1288,21 +1288,22 @@ let dayExclusive = [];
 
 tasks.forEach(t => {
 
-let uniqueEvents = [...new Set(t.events)];
-let count = uniqueEvents.length;
+let related = rawData.filter(r => 
+  r.task === t.task && r.d === t.d
+);
 
-if(count >= 3){
-triple.push({...t, type:"triple"});
+let categories = related.map(r => r.category);
+
+if(categories.includes("Triple")){
+  triple.push({...t, type:"triple"});
 }
-else if(count === 2){
-double.push({...t, type:"double"});
+else if(categories.includes("Double")){
+  double.push({...t, type:"double"});
 }
 
-console.log("Exclusive check:", t.task, t.dayExclusive);
-  
-if(t.dayExclusive === true){
-dayExclusive.push(t);
-} 
+if(categories.includes("Exclusive")){
+  dayExclusive.push(t);
+}
 
 });
 

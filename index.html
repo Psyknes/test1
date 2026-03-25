@@ -1781,29 +1781,43 @@ function updateTimer(){
   let container = document.getElementById("timer");
   if(!container) return;
 
-  let html = "";
+  function getBestTask(list){
 
-  triple.forEach(t => {
+    // ACTIVE first
+    let active = list.find(t=>{
+      let w = getTaskWindow(t);
+      return w && now >= w.start && now <= w.end;
+    });
 
-    let eventTime = getNextOccurrence(t);
+    if(active) return {task: active, type: "ACTIVE"};
 
-    if(!eventTime) return;
+    // else NEXT
+    let sorted = list.slice().sort((a,b)=>{
+      let ta = getNextOccurrence(a) || Infinity;
+      let tb = getNextOccurrence(b) || Infinity;
+      return ta - tb;
+    });
 
-    let diff = eventTime - now;
+    return {task: sorted[0], type: "NEXT"};
+  }
 
-    let h = Math.floor(diff / (1000 * 60 * 60));
-    let m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    let s = Math.floor((diff % (1000 * 60)) / 1000);
+  let best = getBestTask(triple);
 
-    let timeLeft = `${h}h ${m}m ${s}s`;
+  if(!best.task){
+    container.innerHTML = "";
+    return;
+  }
 
-    html += `
-    <div class="row">
-      <span>${t.task}</span>
-      <span>${timeLeft}</span>
+  let w = getTaskWindow(best.task);
+  let timeStr = formatToLocalTime(best.task.times?.[0], best.task.d);
+
+  let html = `
+    <div style="text-align:center;">
+      <div>Triple Chain - ${best.type}</div>
+      <div style="font-size:18px;"><b>${best.task.task}</b></div>
+      <div>${timeStr}</div>
     </div>
-    `;
-  });
+  `;
 
   container.innerHTML = html;
 }
@@ -1816,29 +1830,40 @@ function updateDoubleTimer(){
   let container = document.getElementById("doubleTimer");
   if(!container) return;
 
-  let html = "";
+  function getBestTask(list){
 
-  double.forEach(t => {
+    let active = list.find(t=>{
+      let w = getTaskWindow(t);
+      return w && now >= w.start && now <= w.end;
+    });
 
-    let eventTime = getNextOccurrence(t);
+    if(active) return {task: active, type: "ACTIVE"};
 
-    if(!eventTime) return;
+    let sorted = list.slice().sort((a,b)=>{
+      let ta = getNextOccurrence(a) || Infinity;
+      let tb = getNextOccurrence(b) || Infinity;
+      return ta - tb;
+    });
 
-    let diff = eventTime - now;
+    return {task: sorted[0], type: "NEXT"};
+  }
 
-    let h = Math.floor(diff / (1000 * 60 * 60));
-    let m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    let s = Math.floor((diff % (1000 * 60)) / 1000);
+  let best = getBestTask(double);
 
-    let timeLeft = `${h}h ${m}m ${s}s`;
+  if(!best.task){
+    container.innerHTML = "";
+    return;
+  }
 
-    html += `
-    <div class="row">
-      <span>${t.task}</span>
-      <span>${timeLeft}</span>
+  let timeStr = formatToLocalTime(best.task.times?.[0], best.task.d);
+
+  let html = `
+    <div style="text-align:center;">
+      <div>Double Chain - ${best.type}</div>
+      <div style="font-size:18px;"><b>${best.task.task}</b></div>
+      <div>${timeStr}</div>
     </div>
-    `;
-  });
+  `;
 
   container.innerHTML = html;
 }

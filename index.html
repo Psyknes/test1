@@ -1335,7 +1335,7 @@ function buildTaskMap(){
 }
 
 function classifyTasks(){
-
+console.log("RAW DATA SAMPLE:", rawData[0]);
   let tasks = buildTaskMap();
 
   let triple = [];
@@ -1360,36 +1360,39 @@ function classifyTasks(){
   return {triple, double, dayExclusive};
 }
 
-function formatToLocalTime(hourUTC, dayStr){
+function formatToLocalTime(time, d){
 
-if(hourUTC === "ALL" || hourUTC === undefined){
-return "All Day";
-}
+  if(!time || time === "ALL") return "";
 
-if(typeof hourUTC === "string" && hourUTC.includes(":")){
-hourUTC = Number(hourUTC.split(":")[0]);
-}else{
-hourUTC = Number(hourUTC);
-}
+  let [h,m] = String(time).split(":").map(Number);
 
-let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let targetDay = days.indexOf(dayStr);
+  let now = new Date();
 
-let date = new Date();
-date.setUTCHours(hourUTC,0,0,0);
+  let date = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    h,
+    m
+  ));
 
-let diff = targetDay - date.getUTCDay();
-if(diff < 0) diff += 7;
+  let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  let targetDay = days.indexOf(d);
 
-date.setUTCDate(date.getUTCDate() + diff);
+  if(targetDay === -1) return "";
 
-return date.toLocaleTimeString([],{
-hour:'2-digit',
-minute:'2-digit',
-hour12:true
-});
+  let diff = targetDay - date.getUTCDay();
+  if(diff < 0) diff += 7;
 
-}
+  date.setUTCDate(date.getUTCDate() + diff);
+
+  return date.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+}  
 
 function getNextOccurrence(task){
 

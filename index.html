@@ -1510,6 +1510,8 @@ function getTaskState(task){
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let targetDay = days.indexOf(task.d);
 
+  if(targetDay === -1) return null;
+
   let best = null;
 
   task.times.forEach(time => {
@@ -1535,28 +1537,26 @@ function getTaskState(task){
 
     let start = new Date(local.getTime() - 4 * 60 * 60 * 1000);
 
-    // ACTIVE
+    // 🔥 ACTIVE WINDOW
     if(now >= start && now <= local){
       best = {status: "ACTIVE", time: local};
       return;
     }
 
-    // UPCOMING
+    // 🔥 FUTURE (NEXT)
     if(now < start){
       if(!best || local < best.time){
         best = {status: "UPCOMING", time: local};
       }
+      return;
     }
 
-    // COMPLETED fallback
-  // FUTURE fallback (always move to next cycle)
-if(now > local){
-  local.setDate(local.getDate() + 7);
-}
+    // 🔥 PAST → MOVE TO NEXT CYCLE
+    local.setDate(local.getDate() + 7);
 
-if(!best || local < best.time){
-  best = {status: "UPCOMING", time: local};
-}
+    if(!best || local < best.time){
+      best = {status: "UPCOMING", time: local};
+    }
 
   });
 

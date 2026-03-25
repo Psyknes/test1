@@ -2092,7 +2092,11 @@ let html = "";
 
 /* ---------- TRIPLE ---------- */
 
-let todayTriple = triple.filter(t => t.d === today);
+let todayTriple = triple.filter(t => {
+  let h = t.times.find(x => x !== "ALL");
+  let localDay = getLocalDay(h, t.d);
+  return localDay === today;
+});
 
 if(todayTriple.length){
 
@@ -2140,7 +2144,11 @@ ${p?.tip ? `<div class="prepTip saveItem">${p.tip}</div>` : ""}
 
 /* ---------- DOUBLE ---------- */
 
-let todayDouble = double.filter(t => t.d === today);
+let todayDouble = double.filter(t => {
+  let h = t.times.find(x => x !== "ALL");
+  let localDay = getLocalDay(h, t.d);
+  return localDay === today;
+});
 
 if(todayDouble.length){
 

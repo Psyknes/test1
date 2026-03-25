@@ -1396,53 +1396,54 @@ function formatToLocalTime(time, d){
 
 function getNextOccurrence(task){
 
-  if(!task) return null;
-
-  // support BOTH rawData and mapped tasks
-  let time = task.utc || (task.times && task.times[0]);
-
-  if(!time || time === "ALL") return null;
-
-  let [h,m] = String(time).split(":").map(Number);
+  if(!task || !task.times || !task.times.length) return null;
 
   let now = new Date();
-
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let targetDay = days.indexOf(task.d);
 
   if(targetDay === -1) return null;
 
-  // create base UTC time
-  let base = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate(),
-    h,
-    m
-  ));
+  let best = null;
 
-  let local = new Date(base);
+  task.times.forEach(time => {
 
-  // align weekday
-  let diff = targetDay - local.getDay();
-  if(diff < 0) diff += 7;
+    if(!time || time === "ALL") return;
 
-  local.setDate(local.getDate() + diff);
+    let [h,m] = String(time).split(":").map(Number);
 
-  // ACTIVE WINDOW
-  let start = new Date(local.getTime() - 4 * 60 * 60 * 1000);
+    let base = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      h,
+      m
+    ));
 
-  if(now >= start && now <= local){
-    return local;
-  }
+    let local = new Date(base);
 
-  if(now > local){
-    local.setDate(local.getDate() + 7);
-  }
+    let diff = targetDay - local.getDay();
+    if(diff < 0) diff += 7;
 
-  return local;
+    local.setDate(local.getDate() + diff);
+
+    let start = new Date(local.getTime() - 4 * 60 * 60 * 1000);
+
+    // ACTIVE window priority
+    if(now >= start && now <= local){
+      best = local;
+      return;
+    }
+
+    // otherwise nearest future
+    if(!best || local < best){
+      best = local;
+    }
+
+  });
+
+  return best;
 }
-
 function getTaskWindow(task){
 
   let eventTime = getNextOccurrence(task);

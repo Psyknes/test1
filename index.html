@@ -1381,22 +1381,11 @@ function formatToLocalTimeFromDate(date){
   });
 }
 
-
-  
-
-
 function getTaskState(task){
 
   if(!task || !task.times || !task.times.length) return null;
 
   let now = new Date();
-  let nowUTC = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate(),
-    now.getUTCHours(),
-    now.getUTCMinutes()
-  ));
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let targetDay = days.indexOf(task.d);
@@ -1409,14 +1398,12 @@ function getTaskState(task){
 
     let [h,m] = time.split(":").map(Number);
 
-    let base = new Date(Date.UTC(
-      nowUTC.getUTCFullYear(),
-      nowUTC.getUTCMonth(),
-      nowUTC.getUTCDate(),
-      h,
-      m
-    ));
+    // 🔥 build exact UTC event time
+    let base = new Date();
 
+    base.setUTCHours(h, m, 0, 0);
+
+    // adjust to correct weekday
     let diff = targetDay - base.getUTCDay();
     if(diff < 0) diff += 7;
 
@@ -1425,24 +1412,25 @@ function getTaskState(task){
     let start = new Date(base.getTime() - 4 * 60 * 60 * 1000);
 
     // ACTIVE
-    if(nowUTC >= start && nowUTC <= base){
+    if(now >= start && now <= base){
       best = {status: "ACTIVE", time: base};
       return;
     }
 
-    // UPCOMING
-    if(nowUTC < start){
+    // UPCOMING (same cycle)
+    if(now < start){
       if(!best || base < best.time){
         best = {status: "UPCOMING", time: base};
       }
       return;
     }
 
-    // PAST → NEXT CYCLE
-    base.setUTCDate(base.getUTCDate() + 7);
+    // NEXT WEEK
+    let next = new Date(base);
+    next.setUTCDate(next.getUTCDate() + 7);
 
-    if(!best || base < best.time){
-      best = {status: "UPCOMING", time: base};
+    if(!best || next < best.time){
+      best = {status: "UPCOMING", time: next};
     }
 
   });

@@ -1396,12 +1396,29 @@ function getTaskState(task){
 
     // 🔥 ALL DAY TASK
     if(time === "ALL"){
-      let today = now.getDay();
-      if(targetDay === today){
-        best = {status: "ACTIVE", time: new Date(now)};
-      }
-      return;
-    }
+
+  let today = now.getDay();
+
+  // ALWAYS include ALL-day tasks in rotation
+  let base = new Date();
+  let diff = targetDay - base.getDay();
+  if(diff < 0) diff += 7;
+
+  base.setDate(base.getDate() + diff);
+
+  // TODAY → ACTIVE
+  if(targetDay === today){
+    best = {status: "ACTIVE", time: base};
+    return;
+  }
+
+  // FUTURE → UPCOMING
+  if(!best || base < best.time){
+    best = {status: "UPCOMING", time: base};
+  }
+
+  return;
+}
 
     let [h,m] = time.split(":").map(Number);
 

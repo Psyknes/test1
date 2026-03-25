@@ -2063,7 +2063,6 @@ function updateTodayPanel(){
   let {triple, double, dayExclusive} = getTasks();
 
   let container = document.getElementById("todayPanel");
-
   let html = "";
 
   /* ---------- TRIPLE ---------- */
@@ -2087,13 +2086,13 @@ function updateTodayPanel(){
     } else if(w && now < w.start){
       status = "⭐ Upcoming";
     } else{
-      status = "✔ Completed • → Double Active";
+      status = "✔ Completed";
     }
 
     html += `
-    <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}" style="font-size:13px; border-bottom:none;">
+    <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}">
       <span><b>◆ Triple</b> - ${t.task}</span>
-      <span style="font-size:12px;opacity:.85">${status}</span>
+      <span>${status}</span>
     </div>
     ${p?.tip ? `<div class="prepTip saveItem">${p.tip}</div>` : ""}
     `;
@@ -2115,28 +2114,24 @@ function updateTodayPanel(){
 
     let status = "";
 
-    if(t.events.includes("Power Play") && w){
-      if(now >= w.start && now <= w.end){
-        status = "🔹 ACTIVE";
-      } else if(now < w.start){
-        status = "⭐ Upcoming";
-      } else{
-        status = "✔ Completed";
-      }
-    } else{
+    if(w && now >= w.start && now <= w.end){
       status = "🔹 ACTIVE";
+    } else if(w && now < w.start){
+      status = "⭐ Upcoming";
+    } else{
+      status = "✔ Completed";
     }
 
     html += `
-    <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}" style="font-size:13px; border-bottom:none;">
+    <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}">
       <span><b>◆ Double</b> - ${t.task}</span>
-      <span style="font-size:12px;opacity:.85">${status}</span>
+      <span>${status}</span>
     </div>
     ${p?.tip ? `<div class="prepTip saveItem">${p.tip}</div>` : ""}
     `;
   }
 
-  /* ---------- DAY EXCLUSIVE ---------- */
+  /* ---------- EXCLUSIVE ---------- */
 
   let todayExclusive = dayExclusive.filter(t => t.d === today);
 
@@ -2146,11 +2141,11 @@ function updateTodayPanel(){
     let p = prepMap[t.task];
 
     html += `
-    <div class="row" style="font-size:13px; border-bottom:none;">
+    <div class="row">
       <span><b>◆ Exclusive</b> - ${t.task}</span>
-      <span style="font-size:12px;opacity:.85">📌 Today's Special</span>
+      <span>📌 Today's Special</span>
     </div>
-    ${p?.tip ? `<div class="prepTip" style="margin-left:6px;">${p.tip}</div>` : ""}
+    ${p?.tip ? `<div class="prepTip">${p.tip}</div>` : ""}
     `;
   }
 

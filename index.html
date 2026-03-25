@@ -1458,69 +1458,52 @@ function getTaskWindow(task){
   
 function renderTriple(){
 
-let {triple} = getTasks();
-triple.sort((a,b)=>{
-  let ta = getNextOccurrence(a) || Infinity;
-let tb = getNextOccurrence(b) || Infinity;
-return ta - tb;
-});
-let container = document.getElementById("tripleList");
+  let container = document.getElementById("tripleList");
+  if(!container) return;
 
-container.innerHTML = "";
+  let {triple} = getTasks();
 
-triple.forEach(t => {
+  let now = new Date();
 
-let row = document.createElement("div");
-row.className = "row";
+  triple.sort((a,b)=>{
+    let ta = getNextOccurrence(a) || Infinity;
+    let tb = getNextOccurrence(b) || Infinity;
+    return ta - tb;
+  });
 
-let timeText = "";
+  let html = "";
 
-let hasPowerPlay = t.events.includes("Power Play");
+  triple.forEach(t => {
 
-if(hasPowerPlay){
-let h = t.times
-  .map(x => String(x).trim())   // 🔥 clean values
-  .find(x => x !== "ALL")
+    let eventTime = getNextOccurrence(t);
 
-if(h !== undefined){
-timeText = formatToLocalTime(h, t.d);
-}else{
-timeText = "All Day";
+    // 🔥 SAFE GUARD
+    if(!eventTime) return;
+
+    let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
+
+    let status = "";
+
+    if(now >= start && now <= eventTime){
+      status = "⚡ ACTIVE";
+    } else if(now < start){
+      status = "⭐ Upcoming";
+    } else{
+      status = "✔ Completed";
+    }
+
+    let timeStr = formatToLocalTime(t.times?.[0], t.d);
+
+    html += `
+    <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}">
+      <span>${t.d}</span>
+      <span>${timeStr} — ${t.task}</span>
+    </div>
+    `;
+  });
+
+  container.innerHTML = html;
 }
-}
-  
-else if(t.times.includes("ALL")){
-timeText = "All Day";
-}
-else{
-let h = t.times
-  .map(x => String(x).trim())   // 🔥 clean values
-  .find(x => x !== "ALL")
-
-if(h !== undefined){
-timeText = formatToLocalTime(h, t.d);
-}else{
-timeText = "All Day";
-}
-  
-}
-  
-let h = t.times.find(x => x !== "ALL");
-
-let next = getNextOccurrence(t);
-
-let displayDay = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][next.getDay()];
-
-row.innerHTML = `
-<span>${displayDay}</span>
-<span>${timeText} — ${t.task}</span>
-`;
-
-container.appendChild(row);
-
-});
-
-} 
   
 function renderDouble(){
 

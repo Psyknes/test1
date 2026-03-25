@@ -1524,51 +1524,52 @@ container.appendChild(row);
   
 function renderDouble(){
 
-let {double} = getTasks();
-let container = document.getElementById("doubleList");
+  let container = document.getElementById("doubleList");
+  if(!container) return;
 
-container.innerHTML = "";
+  let {double} = getTasks();
 
-double.sort((a,b)=>{
-let ta = getNextOccurrence(a) || Infinity;
-let tb = getNextOccurrence(b) || Infinity;
-return ta - tb;
-});  
+  let now = new Date();
 
-double.forEach(t => {
+  // SAFE SORT
+  double.sort((a,b)=>{
+    let ta = getNextOccurrence(a) || Infinity;
+    let tb = getNextOccurrence(b) || Infinity;
+    return ta - tb;
+  });
 
-let row = document.createElement("div");
-row.className = "row";
+  let html = "";
 
-// 🔥 CLEAN TIMES ONCE
-let times = t.times.map(x => String(x).trim());
+  double.forEach(t => {
 
-// 🔥 GET FIRST VALID TIME
-let h = times.find(x => x !== "ALL");
+    let eventTime = getNextOccurrence(t);
 
-// 🔥 TIME TEXT
-let timeText;
+    // 🔥 SAFE GUARD (THIS FIXES YOUR ERROR)
+    if(!eventTime) return;
 
-if(!h){
-timeText = "All Day";
-}else{
-timeText = formatToLocalTime(h, t.d);
-}
+    let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
 
-// 🔥 USE NEXT OCCURRENCE FOR DAY
-let next = getNextOccurrence(t);
+    let status = "";
 
-let displayDay = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][next.getDay()];
+    if(now >= start && now <= eventTime){
+      status = "🔹 ACTIVE";
+    } else if(now < start){
+      status = "⭐ Upcoming";
+    } else{
+      status = "✔ Completed";
+    }
 
-row.innerHTML = `
-<span>${displayDay}</span>
-<span>${timeText} — ${t.task}</span>
-`;
+    let timeStr = formatToLocalTime(t.times?.[0], t.d);
 
-container.appendChild(row);
+    html += `
+    <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}">
+      <span>${t.d}</span>
+      <span>${timeStr} — ${t.task}</span>
+    </div>
+    `;
+  });
 
-});
-
+  container.innerHTML = html;
 }
   
 function renderDayExclusive(){

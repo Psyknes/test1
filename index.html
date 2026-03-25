@@ -2088,6 +2088,8 @@ let html = "";
 
 /* ---------- TRIPLE ---------- */
 
+/* ---------- TRIPLE ---------- */
+
 let todayTriple = triple.filter(t => {
   let h = t.times.find(x => x !== "ALL");
   let localDay = getLocalDay(h, t.d);
@@ -2095,53 +2097,41 @@ let todayTriple = triple.filter(t => {
 });
 
 console.log("todayTriple:", todayTriple);  
-  
-  
+
 if(todayTriple.length){
 
-let t = todayTriple[0];
-let p = prepMap[t.task]; 
+  let t = todayTriple[0];
+  let p = prepMap[t.task]; 
 
-let status = "";
+  let status = "";
 
-if(t.events.includes("Power Play")){
+  if(t.events.includes("Power Play")){
 
-// 🔥 get TODAY's actual time (NOT next occurrence)
-let h = t.times.find(x => x !== "ALL");
+    let eventTime = getNextOccurrence(t);
+    let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
 
-if(typeof h === "string" && h.includes(":")){
-  h = Number(h.split(":")[0]);
-}else{
-  h = Number(h);
-}
+    if(now >= start && now <= eventTime){
+      status = "⚡ ACTIVE";
+    }
+    else if(now < start){
+      status = "⭐ Upcoming";
+    }
+    else{
+      status = "✔ Completed • → Double Active";
+    }
 
-let eventTime = getNextOccurrence(t);
+  }
 
-let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
+  html += `
+  <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}" style="font-size:13px; border-bottom:none;">
+    <span><b>◆ Triple</b> - ${t.task}</span>
+    <span style="font-size:12px;opacity:.85">${status}</span>
+  </div>
 
-// 🔥 status logic
-if(now >= start && now <= eventTime){
-  status = "⚡ ACTIVE";
-}
-else if(now < start){
-  status = "⭐ Upcoming";
-}
-else{
-  status = "✔ Completed • → Double Active";
-}
+  ${p?.tip ? `<div class="prepTip saveItem">${p.tip}</div>` : ""}
+  `;
 
-
-html += `
-<div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}" style="font-size:13px; border-bottom:none;">
-<span><b>◆ Triple</b> - ${t.task}</span>
-<span style="font-size:12px;opacity:.85">${status}</span>
-</div>
-
-${p?.tip ? `<div class="prepTip saveItem">${p.tip}</div>` : ""}
-`;
-}
-  
-}  
+} 
   
 /* ---------- DOUBLE ---------- */
 

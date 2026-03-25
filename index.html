@@ -335,49 +335,11 @@ filter: drop-shadow(0 0 6px rgba(255,215,0,.45))
 .allianceLogo{
 margin:0;
 height:80px;
-width:80px;              /* ADD THIS */
 object-fit:contain;
 display:block;  
 z-index:2;  
 animation: emblemGlow 3.5s infinite ease-in-out;
 }
-
-.leaderImg{
-height:65px;
-width:65px;
-object-fit:contain;
-display:block;
-
-/* 🔥 keep square shape */
-border-radius:4px;
-
-/* 🔥 soft square glow */
-box-shadow:
-0 0 2px rgba(255,200,0,0.9),
-0 0 8px rgba(255,160,0,0.6),
-0 0 18px rgba(255,100,0,0.35);
-
-/* 🔥 subtle pulse */
-animation: leaderGlow 2.5s ease-in-out infinite;
-}
-
-@keyframes leaderGlow{
-0%{
-box-shadow:
-0 0 6px rgba(255,140,0,0.3),
-0 0 12px rgba(255,120,0,0.25);
-}
-50%{
-box-shadow:
-0 0 14px rgba(255,180,0,0.7),
-0 0 26px rgba(255,100,0,0.5);
-}
-100%{
-box-shadow:
-0 0 6px rgba(255,140,0,0.3),
-0 0 12px rgba(255,120,0,0.25);
-}
-}  
 
 .todayRow{
 background:transparent;
@@ -517,15 +479,22 @@ opacity:.9;
 }  
 
 .headerBar{
+position:relative;
 display:flex;
 align-items:center;
-justify-content:space-between;
-height:80px;
+justify-content:flex-start;
+min-height:80px; 
+padding-top:0px;  
 }
   
 .headerText{
+position:absolute;
+left:50%;
+top:50%;  
+transform:translate(-50%, -50%);
 text-align:center;
-flex:1;
+width:70%;
+pointer-events:none;
 }
   
 .headerText h1{
@@ -538,6 +507,15 @@ margin:0;
 font-size:12px;
 opacity:.7;
 }
+
+.headerBar{
+height:50px;
+}
+
+.headerBar::after{
+content:"";
+width:80px; /* same as logo width */
+}  
 
 .ghoulionBar{
 display:flex;
@@ -639,25 +617,24 @@ animation: heatPulse 1.5s ease-in-out infinite;
 
 .prepRow{
 margin-bottom:6px;
-padding:4px 2px;
-border-bottom:1px solid #1a1a1a;
+padding:6px;
+border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
 .prepTitle{
-font-weight:600;
-font-size:13px;
-margin-bottom:2px;
+font-weight:bold;
+font-size:12px;
+margin-bottom:3px;
 }
 
 .prepItem{
 font-size:11px;
 color:#4fc3f7;
-margin-bottom:2px;
 }
 
 .prepComment{
-font-size:11px;
-opacity:0.7;
+font-size:10.5px;
+opacity:0.75;
 line-height:1.3;
 }
 
@@ -678,38 +655,6 @@ border-bottom:1px solid #222;
 padding-bottom:6px;
 margin-bottom:6px;
 }
-
-.leaderBox{
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-width:80px;
-height:80px;   /* 🔥 IMPORTANT */
-text-align:center;
-}
-
-.leaderName{
-font-size:11px;
-text-align:center;
-margin-top:2px;
-line-height:1.1;
-}
-
-.leaderTitle{
-font-size:10px;
-opacity:.6;
-line-height:1;
-}
-
-.logoBox{
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-width:80px;
-height:80px;
-}
   
 </style>
 </head>
@@ -726,23 +671,14 @@ height:80px;
   
 <div class="headerBar">
 
-<div class="logoBox">
-  <img src="chillin_logo.png" class="allianceLogo">
-</div>
+<img src="chillin_logo.png" class="allianceLogo">
 
 <div class="headerText">
 <h1>Tiles Survive</h1>
 <div class="subtitle">Alliance Event Planner</div>
 </div>
 
-<div class="leaderBox">
-  <img src="saphireJess.png" class="leaderImg">
-  <div class="leaderName">[CHI]SaphireJess</div>
-  <div class="leaderTitle">Alliance Leader</div>
-</div>
-
-</div>
-  
+</div>  
 <div id="activeBanner" class="activeBanner"></div>
   
 <div class="card ghoulionCard">
@@ -785,8 +721,8 @@ height:80px;
 <div id="todayPanel"></div>
 </div>
 
-<div id="prepPanel" class="card">
-<h2>🧠 Prep</h2>
+<div id="prepPanel" class="panel">
+<div class="panelTitle">Prep</div>
 <div id="prepContent">Loading...</div>
 </div>
   
@@ -974,12 +910,8 @@ let cooldown = false;
 
 if(e.repeat > 0){
 
-let repeatMs = e.repeat * 60 * 60 * 1000;
-
-// 🔥 FIX: handle first cycle properly
 let diff = now - start;
-
-let cycle = diff < 0 ? 0 : Math.floor(diff / repeatMs);
+let cycle = Math.floor(diff / (e.repeat * 60 * 60 * 1000));
 let cycleStart = new Date(start.getTime() + cycle * e.repeat * 60 * 60 * 1000);
 let cycleEnd = new Date(cycleStart.getTime() + durationMs);
 
@@ -1890,18 +1822,9 @@ let diff = nextTime - now;
 let h = Math.floor(diff/1000/60/60);
 let m = Math.floor((diff/1000/60)%60);
 
-let timeStr = nextTime.toLocaleTimeString([],{
-hour:'2-digit',
-minute:'2-digit',
-hour12:true
-});
-
 timer.innerHTML =
 "<b>"+task.task+"</b><br>"+
-(isAllDay 
-  ? ("All Day • " + getDayCountdown()) 
-  : (timeStr + " • " + h+"h "+m+"m")
-);
+(isAllDay ? ("All Day • " + getDayCountdown()) : (h+"h "+m+"m"));
 
 }
 }
@@ -1963,7 +1886,6 @@ return;
 
 let task = selected.task;
 let nextTime = selected.time;
-let label = document.getElementById("doubleLabel");  
 
 
 // 🔥 detect ALL DAY correctly
@@ -1984,15 +1906,11 @@ isActive = true;
 
 if(isActive){
 
-label.innerHTML = "Double Chain • 🔹 ACTIVE";
-
 let start = new Date(nextTime.getTime() - 4 * 60 * 60 * 1000);
 
-let events = [...new Set(task.events)].join(" | ");
-
 el.innerHTML =
-"<b>"+task.task+"</b><br>"+
-"<small style='opacity:.7'>" + events + "</small><br>"+
+"<small>🔹 ACTIVE</small><br><b>"+task.task+"</b><br>"+
+"<small style='opacity:.7'>"+[...new Set(task.events)].join(" | ")+"</small><br>"+
 start.toLocaleTimeString([],{
 hour:'2-digit',
 minute:'2-digit',
@@ -2011,23 +1929,10 @@ let diff = nextTime - now;
 let h = Math.floor(diff/1000/60/60);
 let m = Math.floor((diff/1000/60)%60);
 
-let timeStr = nextTime.toLocaleTimeString([],{
-hour:'2-digit',
-minute:'2-digit',
-hour12:true
-});
-
-label.innerHTML = "Double Chain • Next";
-
-let events = [...new Set(task.events)].join(" | ");
-
 el.innerHTML =
-"<b>"+task.task+"</b><br>"+
-"<small style='opacity:.7'>" + events + "</small><br>"+
-(isAllDay 
-  ? ("All Day • " + getDayCountdown()) 
-  : (timeStr + " • " + h+"h "+m+"m")
-);
+"<small>Next</small><br><b>"+task.task+"</b><br>"+
+"<small style='opacity:.7'>"+[...new Set(task.events)].join(" | ")+"</small><br>"+
+(isAllDay ? ("All Day • " + getDayCountdown()) : (h+"h "+m+"m"));
 
 }
 }  
@@ -2099,35 +2004,30 @@ if(todayTriple.length){
 let t = todayTriple[0];
 let p = prepMap[t.task]; 
 
+let nextTime = getNextOccurrence(t);
+
 let status = "";
 
+// 🔥 ACTIVE (Power Play window)
+let isActive = false;
+
 if(t.events.includes("Power Play")){
-
-// 🔥 get TODAY's actual time (NOT next occurrence)
-let h = t.times.find(x => x !== "ALL");
-
-if(typeof h === "string" && h.includes(":")){
-  h = Number(h.split(":")[0]);
-}else{
-  h = Number(h);
+let start = new Date(nextTime.getTime() - 4 * 60 * 60 * 1000);
+if(now >= start && now <= nextTime){
+isActive = true;
+}
 }
 
-let eventTime = new Date();
-eventTime.setHours(h,0,0,0);
-
-let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
-
-// 🔥 status logic
-if(now >= start && now <= eventTime){
-  status = "⚡ ACTIVE";
+// 🔥 STATUS LOGIC
+if(isActive){
+status = "⚡ ACTIVE";
 }
-else if(now < start){
-  status = "⭐ Upcoming";
+else if(nextTime > now){
+status = "⭐ Upcoming";
 }
 else{
-  status = "✔ Completed • → Double Active";
+status = "✔ Completed";
 }
-
 
 html += `
 <div class="row ${status.includes('ACTIVE') ? 'activeRow' : ''}" style="font-size:13px; border-bottom:none;">
@@ -2148,37 +2048,34 @@ if(todayDouble.length){
 let t = todayDouble[0];
 let p = prepMap[t.task];
 
+let nextTime = getNextOccurrence(t);
+
 let status = "";
 
-if(t.events.includes("Power Play")){
-
-let h = t.times.find(x => x !== "ALL");
-
-if(typeof h === "string" && h.includes(":")){
-  h = Number(h.split(":")[0]);
-}else{
-  h = Number(h);
-}
-
-let eventTime = new Date();
-eventTime.setHours(h,0,0,0);
-
-let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
-
-if(now >= start && now <= eventTime){
-  status = "🔹 ACTIVE";
-}
-else if(now < start){
-  status = "⭐ Upcoming";
+// 🔥 ALL DAY
+if(t.times.includes("ALL") && !t.events.includes("Power Play")){
+status = "🔹 ACTIVE";
 }
 else{
-  status = "✔ Completed";
+
+let isActive = false;
+
+if(t.events.includes("Power Play")){
+let start = new Date(nextTime.getTime() - 4 * 60 * 60 * 1000);
+if(now >= start && now <= nextTime){
+isActive = true;
+}
 }
 
-}else{
-
-// 🔥 no power play → active all day
+if(isActive){
 status = "🔹 ACTIVE";
+}
+else if(nextTime > now){
+status = "⭐ Upcoming";
+}
+else{
+status = "✔ Completed";
+}
 
 }
 
@@ -2189,11 +2086,7 @@ html += `
 </div>
 
 ${p?.tip ? `<div class="prepTip saveItem" style="margin-left:6px;">${p.tip}</div>` : ""}
-`;  
-  
-}
-
-
+`;
 }
   
 /* ---------- DAY EXCLUSIVE ---------- */

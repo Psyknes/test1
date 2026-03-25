@@ -2105,33 +2105,9 @@ let p = prepMap[t.task];
 
 let status = "";
 
-if(t.events.includes("Power Play")){
+let occ = getCurrentOrNextOccurrence(t);
 
-// 🔥 get TODAY's actual time (NOT next occurrence)
-let h = t.times.find(x => x !== "ALL");
-
-if(typeof h === "string" && h.includes(":")){
-  h = Number(h.split(":")[0]);
-}else{
-  h = Number(h);
-}
-
-// 🔥 build TODAY UTC time properly
-let eventTime = new Date();
-eventTime.setUTCHours(h, 0, 0, 0);
-
-// 🔥 align to TODAY's local equivalent of task day
-let localToday = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];
-let taskLocalDay = getLocalDay(h, t.d);
-
-// if mismatch → shift date
-if(taskLocalDay !== localToday){
-  let diff = (["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(taskLocalDay)
-            - ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(localToday));
-
-  eventTime.setDate(eventTime.getDate() + diff);
-}
-
+let eventTime = occ.time;
 let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
 
 // 🔥 status logic
@@ -2171,32 +2147,9 @@ let p = prepMap[t.task];
 
 let status = "";
 
-if(t.events.includes("Power Play")){
+let occ = getCurrentOrNextOccurrence(t);
 
-let h = t.times.find(x => x !== "ALL");
-
-if(typeof h === "string" && h.includes(":")){
-  h = Number(h.split(":")[0]);
-}else{
-  h = Number(h);
-}
-
-// 🔥 build TODAY UTC time properly
-let eventTime = new Date();
-eventTime.setUTCHours(h, 0, 0, 0);
-
-// 🔥 align to TODAY's local equivalent of task day
-let localToday = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];
-let taskLocalDay = getLocalDay(h, t.d);
-
-// if mismatch → shift date
-if(taskLocalDay !== localToday){
-  let diff = (["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(taskLocalDay)
-            - ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(localToday));
-
-  eventTime.setDate(eventTime.getDate() + diff);
-}
-
+let eventTime = occ.time;
 let start = new Date(eventTime.getTime() - 4 * 60 * 60 * 1000);
 
 if(now >= start && now <= eventTime){

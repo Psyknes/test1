@@ -2127,7 +2127,7 @@ let w = getTaskWindow(t);
 
 if(w && now >= w.start && now <= w.end){
       status = "⚡ ACTIVE";
-    } else if(now < start){
+    } else if(w && now < w.start){
       status = "⭐ Upcoming";
     } else{
       status = "✔ Completed • → Double Active";

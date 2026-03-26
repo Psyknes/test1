@@ -737,7 +737,62 @@ height:80px;
 .hunterClock{
   font-size: 13px;   /* 🔧 adjust this */
 }  
- 
+
+/* 🔽 Collapsible Arrow Icon */
+.collapseArrow{
+  display:inline-block;
+  width:18px;
+  height:18px;
+  margin-left:6px;
+  position:relative;
+}
+
+/* double chevron */
+.collapseArrow::before,
+.collapseArrow::after{
+  content:"";
+  position:absolute;
+  left:4px;
+  width:8px;
+  height:8px;
+  border-right:2px solid #ffd54a;
+  border-bottom:2px solid #ffd54a;
+  transform: rotate(45deg);
+  opacity:0.9;
+}
+
+/* second arrow (lower) */
+.collapseArrow::after{
+  top:6px;
+}
+
+/* first arrow (upper) */
+.collapseArrow::before{
+  top:0;
+}
+
+/* 🔼 rotated when expanded */
+.collapseArrow.up{
+  transform: rotate(180deg);
+}
+
+/* ✨ glow animation ONLY on arrow */
+.collapseArrow{
+  animation: arrowGlow 2s ease-in-out infinite;
+}
+
+@keyframes arrowGlow{
+  0%{
+    filter: drop-shadow(0 0 2px rgba(255,213,74,0.4));
+  }
+  50%{
+    filter: drop-shadow(0 0 8px rgba(255,213,74,0.9));
+  }
+  100%{
+    filter: drop-shadow(0 0 2px rgba(255,213,74,0.4));
+  }
+}  
+  
 </style>
 </head>
 
@@ -818,14 +873,18 @@ height:80px;
 </div>
   
 <div class="card triple">
-<h2>◆ Triple Chain List </h2>
+<h2 onclick="toggleList('triple')" id="tripleHeader">
+  ◆ Triple Chain List <span class="collapseArrow"></span>
+</h2>
 
 <div id="tripleList"></div>
 </div>
 
 
 <div class="card double">
-<h2>◆ Double Chain List </h2>
+<h2 onclick="toggleList('double')" id="doubleHeader">
+  ◆ Double Chain List <span class="collapseArrow"></span>
+</h2>
 
 <div id="doubleList"></div>
 
@@ -1458,6 +1517,29 @@ function getTaskState(task){
 
   return { status: "UPCOMING", time: next };
 }
+
+let collapseState = {
+  triple: true,
+  double: true
+};
+
+function toggleList(type){
+
+  collapseState[type] = !collapseState[type];
+
+  // 🔄 rotate arrow
+  let header = document.getElementById(type + "Header");
+  let arrow = header.querySelector(".collapseArrow");
+
+  if(!collapseState[type]){
+    arrow.classList.add("up");
+  }else{
+    arrow.classList.remove("up");
+  }
+
+  if(type === "triple") renderTriple();
+  if(type === "double") renderDouble();
+}
   
 function renderTriple(){
 
@@ -1493,9 +1575,11 @@ function renderTriple(){
   // 🔥 FIND NEXT UPCOMING (ONLY ONE)
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
 
+let limit = collapseState.triple ? 4 : list.length;
+  
   let html = "";
 
-  list.forEach((x, index) => {
+  list.slice(0, limit).forEach((x, index) => {
 
     let t = x.task;
     let state = x.state;
@@ -1552,12 +1636,16 @@ function renderDouble(){
     return a.state.time - b.state.time;
   });
 
+
+  
   // 🔥 FIND NEXT UPCOMING (ONLY ONE)
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
 
+let limit = collapseState.double ? 4 : list.length;
+  
   let html = "";
 
-  list.forEach((x, index) => {
+  list.slice(0, limit).forEach((x, index) => {
 
     let t = x.task;
     let state = x.state;

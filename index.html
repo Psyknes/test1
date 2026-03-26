@@ -1927,127 +1927,107 @@ function updateTodayPanel(){
   let container = document.getElementById("todayPanel");
   let html = "";
 
+  let now = new Date();
+  let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  let today = days[now.getUTCDay()]; // 🔥 UTC DAY
+
+  // 🔧 COMMON SORT
+  function sortTasks(a,b){
+
+    let sa = a.state;
+    let sb = b.state;
+
+    if(!sa && !sb) return 0;
+    if(!sa) return 1;
+    if(!sb) return -1;
+
+    // 1️⃣ STATE
+    let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
+
+    if(order[sa.status] !== order[sb.status]){
+      return order[sa.status] - order[sb.status];
+    }
+
+    // 2️⃣ PRIORITY
+    if(a.task.priority !== b.task.priority){
+      return a.task.priority - b.task.priority;
+    }
+
+    // 3️⃣ TIME
+    return sa.time - sb.time;
+  }
+
+  // 🔧 RENDER HELPER
+  function renderList(list, label, activeIcon){
+
+    list.forEach(x => {
+
+      let t = x.task;
+      let s = x.state;
+      let p = prepMap[t.task];
+
+      let status =
+        s.status === "ACTIVE" ? activeIcon + " ACTIVE" :
+        s.status === "UPCOMING" ? "⭐ Upcoming" :
+        "✔ Completed";
+
+      html += `
+        <div class="row ${s.status === 'ACTIVE' ? 'activeRow' : ''}">
+          <span><b>◆ ${label}</b> - ${t.task}</span>
+          <span>${status}</span>
+        </div>
+        ${p?.tip ? `<div class="prepTip saveItem">${p.tip}</div>` : ""}
+      `;
+    });
+
+  }
+
   /* ---------- TRIPLE ---------- */
 
   let todayTriple = triple
+    .filter(t => t.d === today) // 🔥 UTC FILTER
     .map(t => {
       let s = getTaskState(t);
       return s ? {task:t, state:s} : null;
     })
     .filter(x => x)
-    .sort((a,b)=>{
-
-  let sa = a.state;
-  let sb = b.state;
-
-  if(!sa && !sb) return 0;
-  if(!sa) return 1;
-  if(!sb) return -1;
-
-  // ACTIVE first
-  if(sa.status !== sb.status){
-    return sa.status === "ACTIVE" ? -1 : 1;
-  }
-
-  // 🔥 PRIORITY (LOWER = HIGHER PRIORITY)
-  if(a.task.priority !== b.task.priority){
-    return a.task.priority - b.task.priority;
-  }
-
-  // TIME
-  return sa.time - sb.time;
-})
+    .sort(sortTasks);
 
   if(todayTriple.length){
-
-    let t = todayTriple[0].task;
-    let s = todayTriple[0].state;
-    let p = prepMap[t.task];
-
-    let status =
-      s.status === "ACTIVE" ? "⚡ ACTIVE" :
-      "⭐ Upcoming";
-
-    html += `
-      <div class="row ${s.status === 'ACTIVE' ? 'activeRow' : ''}">
-        <span><b>◆ Triple</b> - ${t.task}</span>
-        <span>${status}</span>
-      </div>
-      ${p?.tip ? `<div class="prepTip saveItem">${p.tip}</div>` : ""}
-    `;
+    renderList(todayTriple, "Triple", "⚡");
   }
 
   /* ---------- DOUBLE ---------- */
 
   let todayDouble = double
+    .filter(t => t.d === today) // 🔥 UTC FILTER
     .map(t => {
       let s = getTaskState(t);
       return s ? {task:t, state:s} : null;
     })
     .filter(x => x)
-    .sort((a,b)=>{
-
-  let sa = a.state;
-  let sb = b.state;
-
-  if(!sa && !sb) return 0;
-  if(!sa) return 1;
-  if(!sb) return -1;
-
-  // ACTIVE first
-  if(sa.status !== sb.status){
-    return sa.status === "ACTIVE" ? -1 : 1;
-  }
-
-  // 🔥 PRIORITY (LOWER = HIGHER PRIORITY)
-  if(a.task.priority !== b.task.priority){
-    return a.task.priority - b.task.priority;
-  }
-
-  // TIME
-  return sa.time - sb.time;
-})
+    .sort(sortTasks);
 
   if(todayDouble.length){
-
-    let t = todayDouble[0].task;
-    let s = todayDouble[0].state;
-    let p = prepMap[t.task];
-
-    let status =
-      s.status === "ACTIVE" ? "🔹 ACTIVE" :
-      "⭐ Upcoming";
-
-    html += `
-      <div class="row ${s.status === 'ACTIVE' ? 'activeRow' : ''}">
-        <span><b>◆ Double</b> - ${t.task}</span>
-        <span>${status}</span>
-      </div>
-      ${p?.tip ? `<div class="prepTip saveItem">${p.tip}</div>` : ""}
-    `;
+    renderList(todayDouble, "Double", "🔹");
   }
 
   /* ---------- EXCLUSIVE ---------- */
 
-  let now = new Date();
-  let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  let today = days[now.getDay()];
-
-  let todayExclusive = dayExclusive.filter(t => t.d === today);
+  let todayExclusive = dayExclusive
+    .filter(t => t.d === today)
+    .map(t => {
+      let s = getTaskState(t);
+      return s ? {task:t, state:s} : null;
+    })
+    .filter(x => x)
+    .sort(sortTasks);
 
   if(todayExclusive.length){
-
-    let t = todayExclusive[0];
-    let p = prepMap[t.task];
-
-    html += `
-      <div class="row">
-        <span><b>◆ Exclusive</b> - ${t.task}</span>
-        <span>📌 Today's Special</span>
-      </div>
-      ${p?.tip ? `<div class="prepTip">${p.tip}</div>` : ""}
-    `;
+    renderList(todayExclusive, "Exclusive", "📌");
   }
+
+  /* ---------- EMPTY ---------- */
 
   if(!todayTriple.length && !todayDouble.length && !todayExclusive.length){
     html = "<small>No priority tasks today</small>";

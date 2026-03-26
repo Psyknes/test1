@@ -1383,80 +1383,52 @@ function formatToLocalTimeFromDate(date){
 
 function getTaskState(task){
 
-  if(!task || !task.times || !task.times.length) return null;
+  if(!task || !task.utc) return null;
 
   let now = new Date();
+
+  let [h,m] = task.utc.split(":").map(Number);
+
+  let base = new Date();
+
+  // set UTC time
+  base.setUTCHours(h, m, 0, 0);
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let targetDay = days.indexOf(task.d);
 
-  let best = null;
-
-  task.times.forEach(time => {
-
-    // 🔥 ALL DAY TASK
-    if(time === "ALL"){
-
-  let today = now.getDay();
-
-  // ALWAYS include ALL-day tasks in rotation
-  let base = new Date();
-  let diff = targetDay - base.getDay();
+  let diff = targetDay - base.getUTCDay();
   if(diff < 0) diff += 7;
 
-  base.setDate(base.getDate() + diff);
+  base.setUTCDate(base.getUTCDate() + diff);
 
-  // TODAY → ACTIVE
-  if(targetDay === today){
-    best = {status: "ACTIVE", time: base};
-    return;
+  // 🔥 duration in HOURS → convert to ms
+  let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
+
+  // ACTIVE
+  if(now >= base && now <= end){
+    return {
+      status: "ACTIVE",
+      time: base
+    };
   }
 
-  // FUTURE → UPCOMING
-  if(!best || base < best.time){
-    best = {status: "UPCOMING", time: base};
+  // UPCOMING (same cycle)
+  if(now < base){
+    return {
+      status: "UPCOMING",
+      time: base
+    };
   }
 
-  return;
-}
+  // NEXT WEEK
+  let next = new Date(base);
+  next.setUTCDate(next.getUTCDate() + 7);
 
-    let [h,m] = time.split(":").map(Number);
-
-    let base = new Date();
-    base.setUTCHours(h, m, 0, 0);
-
-    let diff = targetDay - base.getUTCDay();
-    if(diff < 0) diff += 7;
-
-    base.setUTCDate(base.getUTCDate() + diff);
-
-    let start = new Date(base.getTime() - 4 * 60 * 60 * 1000);
-
-    // ACTIVE (4h window)
-    if(now >= start && now <= base){
-      best = {status: "ACTIVE", time: base};
-      return;
-    }
-
-    // UPCOMING
-    if(now < start){
-      if(!best || base < best.time){
-        best = {status: "UPCOMING", time: base};
-      }
-      return;
-    }
-
-    // NEXT CYCLE
-    let next = new Date(base);
-    next.setUTCDate(next.getUTCDate() + 7);
-
-    if(!best || next < best.time){
-      best = {status: "UPCOMING", time: next};
-    }
-
-  });
-
-  return best;
+  return {
+    status: "UPCOMING",
+    time: next
+  };
 }
   
 function renderTriple(){
@@ -1474,13 +1446,28 @@ function renderTriple(){
     return state ? {task: t, state} : null;
   })
   .filter(x => x)
-  .sort((a,b) => {
-    let order = {ACTIVE:0, UPCOMING:1};
-    if(order[a.state.status] !== order[b.state.status]){
-      return order[a.state.status] - order[b.state.status];
-    }
-    return a.state.time - b.state.time;
-  })
+  .sort((a,b)=>{
+
+  let sa = getTaskState(a);
+  let sb = getTaskState(b);
+
+  if(!sa && !sb) return 0;
+  if(!sa) return 1;
+  if(!sb) return -1;
+
+  // ACTIVE first
+  if(sa.status !== sb.status){
+    return sa.status === "ACTIVE" ? -1 : 1;
+  }
+
+  // 🔥 PRIORITY (LOWER = HIGHER PRIORITY)
+  if(a.priority !== b.priority){
+    return a.priority - b.priority;
+  }
+
+  // TIME
+  return sa.time - sb.time;
+})
   .forEach(x => {
 
     let t = x.task;
@@ -1522,12 +1509,17 @@ function renderDouble(){
   if(!sa) return 1;
   if(!sb) return -1;
 
-  let order = {ACTIVE:0, UPCOMING:1};
-
-  if(order[sa.status] !== order[sb.status]){
-    return order[sa.status] - order[sb.status];
+  // ACTIVE first
+  if(sa.status !== sb.status){
+    return sa.status === "ACTIVE" ? -1 : 1;
   }
 
+  // 🔥 PRIORITY (LOWER = HIGHER PRIORITY)
+  if(a.priority !== b.priority){
+    return a.priority - b.priority;
+  }
+
+  // TIME
   return sa.time - sb.time;
 })
 
@@ -1793,12 +1785,27 @@ function updateTimer(){
   }
 
   candidates.sort((a,b)=>{
-    let order = {ACTIVE:0, UPCOMING:1};
-    if(order[a.state.status] !== order[b.state.status]){
-      return order[a.state.status] - order[b.state.status];
-    }
-    return a.state.time - b.state.time;
-  });
+
+  let sa = getTaskState(a);
+  let sb = getTaskState(b);
+
+  if(!sa && !sb) return 0;
+  if(!sa) return 1;
+  if(!sb) return -1;
+
+  // ACTIVE first
+  if(sa.status !== sb.status){
+    return sa.status === "ACTIVE" ? -1 : 1;
+  }
+
+  // 🔥 PRIORITY (LOWER = HIGHER PRIORITY)
+  if(a.priority !== b.priority){
+    return a.priority - b.priority;
+  }
+
+  // TIME
+  return sa.time - sb.time;
+})
 
   let best = candidates[0];
 
@@ -1931,12 +1938,27 @@ function updateTodayPanel(){
     })
     .filter(x => x)
     .sort((a,b)=>{
-      let order = {ACTIVE:0, UPCOMING:1};
-      if(order[a.state.status] !== order[b.state.status]){
-        return order[a.state.status] - order[b.state.status];
-      }
-      return a.state.time - b.state.time;
-    });
+
+  let sa = getTaskState(a);
+  let sb = getTaskState(b);
+
+  if(!sa && !sb) return 0;
+  if(!sa) return 1;
+  if(!sb) return -1;
+
+  // ACTIVE first
+  if(sa.status !== sb.status){
+    return sa.status === "ACTIVE" ? -1 : 1;
+  }
+
+  // 🔥 PRIORITY (LOWER = HIGHER PRIORITY)
+  if(a.priority !== b.priority){
+    return a.priority - b.priority;
+  }
+
+  // TIME
+  return sa.time - sb.time;
+})
 
   if(todayTriple.length){
 
@@ -1966,12 +1988,27 @@ function updateTodayPanel(){
     })
     .filter(x => x)
     .sort((a,b)=>{
-      let order = {ACTIVE:0, UPCOMING:1};
-      if(order[a.state.status] !== order[b.state.status]){
-        return order[a.state.status] - order[b.state.status];
-      }
-      return a.state.time - b.state.time;
-    });
+
+  let sa = getTaskState(a);
+  let sb = getTaskState(b);
+
+  if(!sa && !sb) return 0;
+  if(!sa) return 1;
+  if(!sb) return -1;
+
+  // ACTIVE first
+  if(sa.status !== sb.status){
+    return sa.status === "ACTIVE" ? -1 : 1;
+  }
+
+  // 🔥 PRIORITY (LOWER = HIGHER PRIORITY)
+  if(a.priority !== b.priority){
+    return a.priority - b.priority;
+  }
+
+  // TIME
+  return sa.time - sb.time;
+})
 
   if(todayDouble.length){
 

@@ -2131,15 +2131,15 @@ function updateTodayPanel(){
 
     let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
 
-    if(order[a.state] !== order[b.state]){
-      return order[a.state] - order[b.state];
+    if(order[a.state.status] !== order[b.state.status]){
+      return order[a.state.status] - order[b.state.status];
     }
 
     if(a.task.priority !== b.task.priority){
       return a.task.priority - b.task.priority;
     }
 
-    return a.time - b.time;
+    return a.state.time - b.state.time;
   }
 
   function getTodayState(t){
@@ -2167,7 +2167,7 @@ function updateTodayPanel(){
     list.forEach(x => {
 
       let t = x.task;
-      let s = x.state;
+      let s = x.state;   // ✅ now object again
       let p = prepMap[t.task];
 
       let start = s.time;
@@ -2200,6 +2200,40 @@ function updateTodayPanel(){
       `;
     });
   }
+
+  function prepare(list){
+
+    return list
+      .filter(t => t.d === today)
+      .map(t => {
+        let s = getTodayState(t);
+        return {task:t, state:s};   // ✅ FIXED STRUCTURE
+      })
+      .sort(sortTasks);
+  }
+
+  let todayTriple = prepare(triple);
+  let todayDouble = prepare(double);
+  let todayExclusive = prepare(dayExclusive);
+
+  if(todayTriple.length){
+    renderList(todayTriple, "Triple", "⚡");
+  }
+
+  if(todayDouble.length){
+    renderList(todayDouble, "Double", "🔹");
+  }
+
+  if(todayExclusive.length){
+    renderList(todayExclusive, "Exclusive", "📌");
+  }
+
+  if(!todayTriple.length && !todayDouble.length && !todayExclusive.length){
+    html = "<small>No priority tasks today</small>";
+  }
+
+  container.innerHTML = html;
+}
 
   function prepare(list){
 

@@ -714,6 +714,33 @@ height:80px;
   border-left: none;                     /* remove vertical line */
 }
 
+/* 🔹 Task Hunter Typography Control */
+
+/* "Triple Chain - ACTIVE" */
+.hunterStatus{
+  font-size: 12px;   /* 🔧 adjust this */
+}
+
+/* ONLY the word ACTIVE */
+.hunterStatus .state{
+  font-size: 10px;   /* 🔧 adjust this */
+}
+
+/* "Hero Frags" */
+.hunterTask{
+  font-size: 16px;   /* 🔧 adjust this */
+  font-weight: bold;
+}
+
+/* "Ends in 02:06" */
+.hunterTimerText{
+  font-size: 11px;   /* 🔧 adjust this */
+}
+
+/* "05:30 PM" */
+.hunterClock{
+  font-size: 12px;   /* 🔧 adjust this */
+}  
  
 </style>
 </head>
@@ -1864,14 +1891,21 @@ function updateTimer(){
 
   if(!statusEl || !taskEl || !timeEl) return;
 
-  statusEl.innerText = `Triple Chain - ${s.status}`;
-  taskEl.innerText = t.task;
+  statusEl.innerHTML = `
+  <span class="hunterStatus">
+    Triple Chain - <span class="state">${s.status}</span>
+  </span>
+`;
 
-  timeEl.innerHTML =
-    (s.status === "ACTIVE"
-      ? `<span style="color:#ff6b6b">Ends in ${timerStr}</span>`
-      : `<span style="color:#4cff88">Starts in ${timerStr}</span>`)
-    + " • " + formatToLocalTimeFromDate(start);
+taskEl.innerHTML = `<span class="hunterTask">${t.task}</span>`;
+
+timeEl.innerHTML = `
+  <span class="hunterTimerText" style="color:${s.status === "ACTIVE" ? "#ff6b6b" : "#4cff88"}">
+    ${s.status === "ACTIVE" ? "Ends in" : "Starts in"} ${timerStr}
+  </span>
+  •
+  <span class="hunterClock">${formatToLocalTimeFromDate(start)}</span>
+`;
 }
   
 function updateDoubleTimer(){
@@ -1933,14 +1967,21 @@ function updateDoubleTimer(){
 
   if(!statusEl || !taskEl || !timeEl) return;
 
-  statusEl.innerText = `Double Chain - ${s.status}`;
-  taskEl.innerText = t.task;
+  statusEl.innerHTML = `
+  <span class="hunterStatus">
+    Double Chain - <span class="state">${s.status}</span>
+  </span>
+`;
 
-  timeEl.innerHTML =
-    (s.status === "ACTIVE"
-      ? `<span style="color:#ff6b6b">Ends in ${timerStr}</span>`
-      : `<span style="color:#4cff88">Starts in ${timerStr}</span>`)
-    + " • " + formatToLocalTimeFromDate(start);
+taskEl.innerHTML = `<span class="hunterTask">${t.task}</span>`;
+
+timeEl.innerHTML = `
+  <span class="hunterTimerText" style="color:${s.status === "ACTIVE" ? "#ff6b6b" : "#4cff88"}">
+    ${s.status === "ACTIVE" ? "Ends in" : "Starts in"} ${timerStr}
+  </span>
+  •
+  <span class="hunterClock">${formatToLocalTimeFromDate(start)}</span>
+`;
 }
 
 // 🔹 LOAD ANNOUNCEMENT (can run independently)

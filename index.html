@@ -1277,6 +1277,10 @@ let h = Math.floor(diff/1000/60/60);
 let m = Math.floor((diff/1000/60)%60);
 
 let countdown = h + "h " + m + "m";
+
+// 🔥 NEW — add start time
+let timeStr = formatToLocalTimeFromDate(nextTime);
+
 console.log("Checking:", t.task, "→", p);  
 
 if(!p) return;
@@ -1286,7 +1290,7 @@ if(!(p.itemPrep || p.activityPrep)) return;
 
 html += `
 <div class="prepRow">
-  <div class="prepTitle">${t.task} • ${countdown}</div>
+  <div class="prepTitle">${t.task} • ${timeStr} • ${countdown}</div>
   ${p.saveItemType ? `<div class="prepItem">Save: ${p.saveItemType}</div>` : ""}
   ${p.prepComment ? `<div class="prepComment">${p.prepComment}</div>` : ""}
 </div>

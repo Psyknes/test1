@@ -1492,26 +1492,28 @@ function renderDouble(){
   // SAFE SORT
   double.sort((a,b)=>{
 
-  let sa = a.state;
-  let sb = b.state;
+  let sa = getTaskState(a);
+  let sb = getTaskState(b);
 
   if(!sa && !sb) return 0;
   if(!sa) return 1;
   if(!sb) return -1;
 
-  // ACTIVE first
-  if(sa.status !== sb.status){
-    return sa.status === "ACTIVE" ? -1 : 1;
+  let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
+
+  // 1️⃣ STATE (this creates cycling effect)
+  if(order[sa.status] !== order[sb.status]){
+    return order[sa.status] - order[sb.status];
   }
 
-  // 🔥 PRIORITY (LOWER = HIGHER PRIORITY)
-  if(a.task.priority !== b.task.priority){
-    return a.task.priority - b.task.priority;
+  // 2️⃣ PRIORITY
+  if(a.priority !== b.priority){
+    return a.priority - b.priority;
   }
 
-  // TIME
+  // 3️⃣ TIME
   return sa.time - sb.time;
-})
+});
 
   let html = "";
 

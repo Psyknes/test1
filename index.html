@@ -27,8 +27,8 @@ z-index:999;
 
 /* animation */
 @keyframes scrollTicker{
-  0%{transform:translateX(100%);}
-  100%{transform:translateX(-100%);}
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
 }
 
 /* 🚨 emergency mode */
@@ -1050,10 +1050,20 @@ isEmergency = true;
 
 // 🔥 APPLY MESSAGE
 if(isEmergency){
-text.innerHTML = "🚨 " + data.message;
+let msg = isEmergency
+  ? "🚨 " + data.message
+  : (data.normalMessage || data.message);
+
+// 🔥 duplicate text (this removes gap)
+text.innerHTML = msg + " • " + msg;
 ticker.classList.add("emergency");
 }else{
-text.innerHTML = data.normalMessage || data.message;
+let msg = isEmergency
+  ? "🚨 " + data.message
+  : (data.normalMessage || data.message);
+
+// 🔥 duplicate text (this removes gap)
+text.innerHTML = msg + " • " + msg;
 ticker.classList.remove("emergency");
 }
 

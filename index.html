@@ -1244,10 +1244,10 @@ let now = new Date();
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let nextDay = days[(now.getUTCDay() + 1) % 7];
 
-let {triple, double} = getTasks();
+let {triple, double, dayExclusive} = getTasks();
 
 // 🔥 collect next day tasks
-let nextDayTasks = [...triple, ...double].filter(t => t.d === nextDay);
+let nextDayTasks = [...triple, ...double, ...dayExclusive].filter(t => t.d === nextDay);
 
 nextDayTasks
 .sort((a,b)=>{
@@ -1278,8 +1278,14 @@ let m = Math.floor((diff/1000/60)%60);
 
 let countdown = h + "h " + m + "m";
 
-// 🔥 NEW — add start time
+// 🔥 time string
 let timeStr = formatToLocalTimeFromDate(nextTime);
+
+// 🔥 NEW — detect type
+let type = "";
+if(t.categories && t.categories.includes("Triple")) type = "Triple";
+else if(t.categories && t.categories.includes("Double")) type = "Double";
+else if(t.categories && t.categories.includes("Exclusive")) type = "Exclusive";
 
 console.log("Checking:", t.task, "→", p);  
 
@@ -1290,7 +1296,7 @@ if(!(p.itemPrep || p.activityPrep)) return;
 
 html += `
 <div class="prepRow">
-  <div class="prepTitle">${t.task} • ${timeStr} • ${countdown}</div>
+  <div class="prepTitle">${t.task} (${type}) • ${timeStr} • ${countdown}</div>
   ${p.saveItemType ? `<div class="prepItem">Save: ${p.saveItemType}</div>` : ""}
   ${p.prepComment ? `<div class="prepComment">${p.prepComment}</div>` : ""}
 </div>

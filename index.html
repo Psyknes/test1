@@ -172,8 +172,9 @@ gap:4px;
 }
 
 #todayPanel .row{
-padding:4px 0;
-}  
+  padding:4px 0;
+  font-size:12px;   /* slightly smaller */
+} 
   
 .row:last-child{
 border-bottom:none;
@@ -500,17 +501,7 @@ padding:2px 0;
 font-size:var(--meta);
 opacity:.75;
 }  
-
-.activeRow{
-background:#2a2410;
-border-left:3px solid #ffd700;
-}
-
-.activeRow .status{
-color:#ffd700;
-font-weight:bold;
-}
-  
+ 
 .huntLine{
 font-size:14px;
 opacity:.9;
@@ -711,16 +702,19 @@ width:80px;
 height:80px;
 }
 
+/* 🟡 NEXT — soft yellow (very subtle) */
 .nextRow{
-  background: linear-gradient(90deg, rgba(255,215,0,0.12), transparent);
-  border-left: 3px solid #ffd700;
+  background: rgba(255, 215, 0, 0.06);
+  border-left: none;
 }
 
+/* 🟢 ACTIVE — soft light green (subtle, transparent) */
 .activeRow{
-  background: linear-gradient(90deg, rgba(0,255,150,0.12), transparent);
-  border-left: 3px solid #00ff95;
+  background: rgba(0, 255, 150, 0.08);   /* softer + no gradient */
+  border-left: none;                     /* remove vertical line */
 }
-  
+
+ 
 </style>
 </head>
 

@@ -17,18 +17,18 @@ font-size:13px;
 z-index:999;
 }
 
-/* scrolling text */
+/* scrolling text top ticker*/
 .tickerText{
-display:inline-block;
-padding:6px 0;
-padding-left:100%;
-animation: scrollTicker 9s linear infinite;
+  display:inline-block;
+  padding:6px 0;
+  white-space:nowrap;
+  animation: scrollTicker 30s linear infinite;   /* 🔥 slower */
 }
 
 /* animation */
 @keyframes scrollTicker{
-0%{transform:translateX(0);}
-100%{transform:translateX(-100%);}
+  0%{transform:translateX(100%);}
+  100%{transform:translateX(-100%);}
 }
 
 /* 🚨 emergency mode */
@@ -73,12 +73,29 @@ align-items:center;        /* vertical center */
 height:32px;               /* controlled height */
 }
 
+/* scrolling text bottom ticker*/  
 .eventScroll{
-display:flex;              /* change from inline-block */
-align-items:center;        /* center vertically */
-animation: scrollTicker 25s linear infinite;
+  display:inline-flex;          /* 🔥 key change */
+  white-space:nowrap;
+  animation: scrollTicker 40s linear infinite;  /* slower */
 }
 
+.scrollInner{
+  display:inline-flex;
+}  
+
+@media (min-width: 768px){
+
+  .tickerText{
+    animation-duration: 40s;
+  }
+
+  .eventScroll{
+    animation-duration: 55s;
+  }
+
+}
+  
 .eventItem{
 margin-right:50px;      /* was 40px */
 display:flex;
@@ -1302,7 +1319,7 @@ ${e.name} • ${d}d ${h}h ${m}m
 });
 
 document.getElementById("eventTicker").innerHTML =
-'<div class="eventScroll">' + html + html + '</div>';
+'<div class="eventScroll"><div class="scrollInner">' + html + html + '</div></div>';
 }    
 
 async function loadTasks(){

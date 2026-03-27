@@ -2287,7 +2287,7 @@ setInterval(loadTicker, 60000); // every 1 min
 Promise.all([
   loadTasks(),
   loadPrep(),
-  loadSpecialEvents()
+  loadSpecialEvents(),
   loadMaintenance()
 ]).then(() => {
 

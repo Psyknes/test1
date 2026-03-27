@@ -981,8 +981,125 @@ height:80px;
 
 
 <script>
+
+let maintenanceData = null;
+let maintenanceMessageIndex = 0;
+let maintenanceLastSwitch = 0;  
+
+function getMaintenanceState(){
+
+if(!maintenanceData) return "normal";
+
+let now = new Date();
+
+// 🔴 EMERGENCY
+if(maintenanceData.emergency?.main){
+  return "emergency";
+}
+
+// 🟡 SCHEDULED
+let s = maintenanceData.scheduled;
+if(!s || !s.main) return "normal";
+
+// 🔥 get THIS week's Monday 00:00 UTC
+let currentDay = now.getUTCDay();
+let diff = currentDay - s.day;
+
+let start = new Date(now);
+start.setUTCHours(s.hour,0,0,0);
+start.setUTCDate(now.getUTCDate() - diff);
+
+// ⚠️ if future, shift back a week
+if(start > now){
+  start.setUTCDate(start.getUTCDate() - 7);
+}
+
+let duration = s.duration;
+
+// 🔥 duration > 0
+if(duration > 0){
+
+  let end = new Date(start.getTime() + duration * 60000);
+
+  if(now >= start && now <= end){
+    return "scheduled";
+  }
+
+}else{
+  // 🔥 duration = 0 → infinite
+  if(now >= start){
+    return "scheduled";
+  }
+}
+
+return "normal";
+}  
+
+function applyMaintenanceUI(){
+
+let state = getMaintenanceState();
+
+// 🔴 EMERGENCY
+let overlay = document.getElementById("maintenanceScreen");
+
+if(state === "emergency"){
+
+  overlay.style.display = "flex";
+
+  updateMaintenanceMessage();
+  return;
+}
+
+// 🟡 SCHEDULED
+let hideIds = [
+  "taskHunter",
+  "tripleList",
+  "doubleList",
+  "todayPanel",
+  "prepContent"
+];
+
+if(state === "scheduled"){
+
+  hideIds.forEach(id=>{
+    let el = document.getElementById(id);
+    if(el) el.style.display = "none";
+  });
+
+}else{
+
+  hideIds.forEach(id=>{
+    let el = document.getElementById(id);
+    if(el) el.style.display = "";
+  });
+
+  overlay.style.display = "none";
+}
+}
+
+function updateMaintenanceMessage(){
+
+let msgBox = document.getElementById("maintenanceMessage");
+if(!msgBox || !maintenanceData) return;
+
+let m = maintenanceData.messages;
+
+if(m.mode === "rotate" && m.rotate.length){
+
+  let now = Date.now();
+
+  if(now - maintenanceLastSwitch > m.interval * 1000){
+    maintenanceMessageIndex = (maintenanceMessageIndex + 1) % m.rotate.length;
+    maintenanceLastSwitch = now;
+  }
+
+  msgBox.innerText = m.rotate[maintenanceMessageIndex];
+
+}else{
+  msgBox.innerText = m.static;
+}
+}
   
- 
 function getLocalDay(hourUTC, dayStr){
 
 if(hourUTC === "ALL" || hourUTC === undefined){
@@ -1358,6 +1475,16 @@ document.getElementById("eventTicker").innerHTML =
 '<div class="eventScroll"><div class="scrollInner">' + html + html + '</div></div>';
 }    
 
+async function loadMaintenance(){
+
+try{
+let res = await fetch("data/maintenance.json");
+maintenanceData = await res.json();
+}catch(e){
+console.log("Maintenance load error", e);
+}
+}
+  
 async function loadTasks(){
 try{
 let res = await fetch("data/tasks.json");
@@ -2161,6 +2288,7 @@ Promise.all([
   loadTasks(),
   loadPrep(),
   loadSpecialEvents()
+  loadMaintenance()
 ]).then(() => {
 
   // 🔹 INITIAL RENDER (after data is ready)
@@ -2182,6 +2310,7 @@ Promise.all([
 setInterval(function(){
   updateTimer();
   updateDoubleTimer();
+  applyMaintenanceUI(); 
 }, 1000);
 
   // 🔹 LONG EVENT TICKER REFRESH (5 mins)
@@ -2326,6 +2455,18 @@ updateTodayPanel();
 </script>
 
 </div>
+
+ <div id="maintenanceScreen" style="display:none; position:fixed; inset:0; background:#000; z-index:9999; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
+
+  <div style="font-size:20px; margin-bottom:10px;">
+    🚧 Maintenance in Progress
+  </div>
+
+  <div id="maintenanceMessage" style="font-size:14px; color:#aaa; margin-bottom:10px;"></div>
+
+  <div id="maintenanceTimer" style="font-size:13px; color:#ccc;"></div>
+
+</div> 
   
 </body>
 </html>

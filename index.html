@@ -1371,7 +1371,10 @@ let nextDay = days[tomorrowUTC.getUTCDay()];
 let {triple, double, dayExclusive} = getTasks();
 
 // 🔥 collect next day tasks
-let nextDayTasks = [...triple, ...double, ...dayExclusive].filter(t => t.d === nextDay);
+let nextDayTasks = [...triple, ...double, ...dayExclusive]
+  .filter(t => {
+    return t.d === nextDay;   // 🔥 ONLY tomorrow
+  });
 
 nextDayTasks
 .sort((a,b)=>{
@@ -2113,11 +2116,11 @@ setInterval(loadTicker, 60000); // every 1 min
 // 🔹 LOAD ALL CORE DATA FIRST (CRITICAL FIX)
 Promise.all([
   loadTasks(),
-  loadPrep(),
   loadSpecialEvents()
 ]).then(() => {
 
   // 🔹 INITIAL RENDER (after data is ready)
+  loadPrep(),
   renderTriple();
   renderDouble();
   renderDayExclusive();

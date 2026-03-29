@@ -1323,136 +1323,110 @@ async function loadSpecialEvents(){
 
 function getActiveShortEvent(){
 
-let now = new Date();
+  let now = new Date();
+  let candidates = [];
 
-let candidates = [];
+  shortEvents.forEach(e => {
 
-shortEvents.forEach(e => {
+    if(!e.active) return;
 
-if(!e.active) return;
+    let start = new Date(e.start);
+    let durationMs = e.duration * 60 * 1000;
 
-let start = new Date(e.start);
-let durationMs = e.duration * 60 * 1000;
+    // 🔴 REPEATING EVENTS
+    if(e.repeat > 0){
 
-let active = false;
-let prep = false;
-let cooldown = false;
+      let repeatMs = e.repeat * 60 * 60 * 1000;
 
-if(e.repeat > 0){
+      // 🔥 find NEXT cycle
+      let cycleStart = new Date(start);
 
-let repeatMs = e.repeat * 60 * 60 * 1000;
+      while(cycleStart <= now){
+        cycleStart = new Date(cycleStart.getTime() + repeatMs);
+      }
 
-// 🔥 FIX: handle first cycle properly
-let repeatMs = e.repeat * 60 * 60 * 1000;
+      // 🔥 previous cycle
+      let prevStart = new Date(cycleStart.getTime() - repeatMs);
+      let prevEnd = new Date(prevStart.getTime() + durationMs);
 
-// 🔥 find NEXT cycle correctly
-let cycleStart = new Date(start);
+      let state = "prep";
 
-while(cycleStart <= now){
-  cycleStart = new Date(cycleStart.getTime() + repeatMs);
+      if(now >= prevStart && now <= prevEnd){
+        state = "active";
+      }
+      else if(now < cycleStart){
+        state = "prep";
+      }
+      else{
+        state = "cooldown";
+      }
+
+      candidates.push({
+        event: e,
+        state: state,
+        priority: (e.priority !== undefined ? e.priority : 999),
+        start: state === "active" ? prevStart : cycleStart,
+        end: state === "active" ? prevEnd : new Date(cycleStart.getTime() + durationMs)
+      });
+
+    }
+
+    // 🔵 NON-REPEATING EVENTS
+    else{
+
+      let end = new Date(start.getTime() + durationMs);
+
+      if(now < start){
+
+        // PREP
+        candidates.push({
+          event: e,
+          state: "prep",
+          priority: e.priority || 999,
+          start: start,
+          end: end
+        });
+
+      }
+      else if(now >= start && now <= end){
+
+        // ACTIVE / COOLDOWN
+        let remaining = end - now;
+
+        candidates.push({
+          event: e,
+          state: remaining <= 5 * 60 * 1000 ? "cooldown" : "active",
+          priority: e.priority || 999,
+          start: start,
+          end: end
+        });
+
+      }
+
+      // after end → ignore
+
+    }
+
+  });
+
+  if(candidates.length === 0) return null;
+
+  // 🔥 PRIORITY SORT
+  candidates.sort((a,b)=>{
+
+    let order = {active:0, prep:1, cooldown:2};
+
+    if(order[a.state] !== order[b.state]){
+      return order[a.state] - order[b.state];
+    }
+
+    return a.priority - b.priority;
+
+  });
+
+  return candidates[0];
 }
-
-// 🔥 previous cycle
-let prevStart = new Date(cycleStart.getTime() - repeatMs);
-let prevEnd = new Date(prevStart.getTime() + durationMs);
-
-// 🔥 classify correctly
-let active = false;
-let prep = false;
-let cooldown = false;
-
-if(now >= prevStart && now <= prevEnd){
-  active = true;
-}
-else if(now < cycleStart){
-  prep = true;
-}
-else{
-  cooldown = true;
-}
-
-candidates.push({
-  event:e,
-  state: active ? "active" : prep ? "prep" : "cooldown",
-  priority: (e.priority !== undefined ? e.priority : 999),
-  start: active ? prevStart : cycleStart,
-  end: active ? prevEnd : new Date(cycleStart.getTime() + durationMs)
-});
-
-let remaining = cycleEnd - now;
-
-if(now >= cycleStart && now <= cycleEnd){
-active = true;
-if(remaining <= 5 * 60 * 1000) cooldown = true;
-}else if(now < cycleStart){
-prep = true;
-}else{
-cooldown = true;
-}
-
-candidates.push({
-event:e,
-state: active ? "active" : prep ? "prep" : "cooldown",
-priority: (e.priority !== undefined ? e.priority : 999),
-start:cycleStart,
-end:cycleEnd
-});
-
-}else{
-
-// 🔥 non-repeating short event (fixed)
-let end = new Date(start.getTime() + durationMs);
-
-if(now < start){
-
-// PREP
-candidates.push({
-event:e,
-state: "prep",
-priority:e.priority || 999,
-start:start,
-end:end
-});
-
-}else if(now >= start && now <= end){
-
-// ACTIVE / COOLDOWN
-let remaining = end - now;
-
-candidates.push({
-event:e,
-state: remaining <= 5 * 60 * 1000 ? "cooldown" : "active",
-priority:e.priority || 999,
-start:start,
-end:end
-});
-
-}
-
-// after end → ignored
-
-}
-
-});
-
-if(candidates.length === 0) return null;
-
-// 🔥 PRIORITY SORT
-candidates.sort((a,b)=>{
-
-let order = {active:0, prep:1, cooldown:2};
-
-if(order[a.state] !== order[b.state]){
-return order[a.state] - order[b.state];
-}
-
-return a.priority - b.priority;
-
-});
-
-return candidates[0];
-}
-
+  
 function updateSpecialBar(){
 
 let data = getActiveShortEvent();

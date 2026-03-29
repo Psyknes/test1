@@ -912,7 +912,7 @@ height:80px;
 
 </div>
   
-<div class="card hunterUnified">
+<div id="taskHunter" class="card hunterUnified">
 
 <div class="hunterTitle">Task Hunter</div>
 
@@ -1035,45 +1035,176 @@ if(duration > 0){
 return "normal";
 }  
 
+function getMaintenanceState(){
+
+if(!maintenanceData) return "normal";
+
+let now = new Date();
+
+// 🔴 EMERGENCY
+if(maintenanceData.emergency?.main){
+  return "emergency";
+}
+
+// 🟡 SCHEDULED
+let s = maintenanceData.scheduled;
+if(!s || !s.main) return "normal";
+
+let currentDay = now.getUTCDay();
+let diff = currentDay - s.day;
+
+let start = new Date(now);
+start.setUTCHours(s.hour,0,0,0);
+start.setUTCDate(now.getUTCDate() - diff);
+
+if(start > now){
+  start.setUTCDate(start.getUTCDate() - 7);
+}
+
+let duration = s.duration;
+
+// duration > 0
+if(duration > 0){
+  let end = new Date(start.getTime() + duration * 60000);
+  if(now >= start && now <= end){
+    return "scheduled";
+  }
+}else{
+  // duration = 0 → infinite
+  if(now >= start){
+    return "scheduled";
+  }
+}
+
+return "normal";
+}
+
+function updateMaintenanceMessage(){
+
+let msgBox = document.getElementById("maintenanceMessage");
+if(!msgBox || !maintenanceData) return;
+
+let m = maintenanceData.messages;
+
+if(m.mode === "rotate" && m.rotate.length){
+
+  let now = Date.now();
+
+  if(now - maintenanceLastSwitch > m.interval * 1000){
+    maintenanceMessageIndex = (maintenanceMessageIndex + 1) % m.rotate.length;
+    maintenanceLastSwitch = now;
+  }
+
+  msgBox.innerText = m.rotate[maintenanceMessageIndex];
+
+}else{
+  msgBox.innerText = m.static;
+}
+}  
+
+function updateMaintenanceTimer(){
+
+let timerEl = document.getElementById("maintenanceTimer");
+if(!timerEl || !maintenanceData) return;
+
+let s = maintenanceData.scheduled;
+let now = new Date();
+
+let currentDay = now.getUTCDay();
+let diff = currentDay - s.day;
+
+let start = new Date(now);
+start.setUTCHours(s.hour,0,0,0);
+start.setUTCDate(now.getUTCDate() - diff);
+
+if(start > now){
+  start.setUTCDate(start.getUTCDate() - 7);
+}
+
+if(s.duration > 0){
+
+  let end = new Date(start.getTime() + s.duration * 60000);
+  let remaining = end - now;
+
+  if(remaining > 0){
+    let h = Math.floor(remaining/1000/60/60);
+    let m = Math.floor((remaining/1000/60)%60);
+
+    timerEl.innerText = "Ends in " + h + "h " + m + "m";
+  }
+
+}else{
+  timerEl.innerText = "Maintenance ongoing";
+}
+}
+  
 function applyMaintenanceUI(){
 
 let state = getMaintenanceState();
 
-// 🔴 EMERGENCY
-let overlay = document.getElementById("maintenanceScreen");
+let hunter = document.getElementById("taskHunter");
 
-if(state === "emergency"){
-
-  overlay.style.display = "flex";
-
-  updateMaintenanceMessage();
-  return;
-}
-
-// 🟡 SCHEDULED
 let hideIds = [
-  "taskHunter",
   "tripleList",
   "doubleList",
   "todayPanel",
   "prepContent"
 ];
 
+// 🔴 EMERGENCY
+if(state === "emergency"){
+
+  if(hunter){
+    hunter.innerHTML = `
+      <div style="text-align:center; padding:20px;">
+        <div style="font-size:18px; margin-bottom:8px;">
+          🚧 Emergency Maintenance
+        </div>
+        <div id="maintenanceMessage" style="color:#aaa; font-size:13px;"></div>
+      </div>
+    `;
+  }
+
+  updateMaintenanceMessage();
+  return;
+}
+
+// 🟡 SCHEDULED
 if(state === "scheduled"){
+
+  if(hunter){
+    hunter.innerHTML = `
+      <div style="text-align:center; padding:16px;">
+        <div style="font-size:16px; margin-bottom:6px;">
+          🔧 Maintenance in progress
+        </div>
+        <div id="maintenanceTimer" style="font-size:13px; color:#ccc; margin-bottom:6px;"></div>
+        <div id="maintenanceMessage" style="font-size:12px; color:#aaa;"></div>
+      </div>
+    `;
+  }
+
+  updateMaintenanceMessage();
+  updateMaintenanceTimer();
 
   hideIds.forEach(id=>{
     let el = document.getElementById(id);
     if(el) el.style.display = "none";
   });
 
-}else{
+  return;
+}
+
+// 🟢 NORMAL
+if(state === "normal"){
+
+  // restore task hunter
+  initHunterUI();
 
   hideIds.forEach(id=>{
     let el = document.getElementById(id);
     if(el) el.style.display = "";
   });
-
-  overlay.style.display = "none";
 }
 }
 
@@ -2310,7 +2441,7 @@ Promise.all([
 setInterval(function(){
   updateTimer();
   updateDoubleTimer();
-  applyMaintenanceUI(); 
+  applyMaintenanceUI();
 }, 1000);
 
   // 🔹 LONG EVENT TICKER REFRESH (5 mins)

@@ -1001,28 +1001,39 @@ if(maintenanceData.emergency?.main){
 let s = maintenanceData.scheduled;
 if(!s || !s.main) return "normal";
 
-let currentDay = now.getUTCDay();
-let diff = currentDay - s.day;
+let now = new Date();
 
+// 🔥 Find THIS WEEK'S scheduled start
 let start = new Date(now);
-start.setUTCHours(s.hour,0,0,0);
-start.setUTCDate(now.getUTCDate() - diff);
 
+// Move to this week's scheduled day
+let diff = s.day - now.getUTCDay();
+start.setUTCDate(now.getUTCDate() + diff);
+start.setUTCHours(s.hour, 0, 0, 0);
+
+// 🔥 If start is in future → move to last week's occurrence
 if(start > now){
   start.setUTCDate(start.getUTCDate() - 7);
 }
 
 let duration = s.duration;
 
-// duration > 0
+// 🔥 NORMAL WINDOW (duration > 0)
 if(duration > 0){
   let end = new Date(start.getTime() + duration * 60000);
+
   if(now >= start && now <= end){
     return "scheduled";
   }
-}else{
-  // duration = 0 → infinite
-  if(now >= start){
+}
+
+// 🔥 INFINITE MODE (duration = 0)
+if(duration === 0){
+  // Only stay active if we are in the SAME week cycle
+  let endOfDay = new Date(start);
+  endOfDay.setUTCHours(23, 59, 59, 999);
+
+  if(now >= start && now <= endOfDay){
     return "scheduled";
   }
 }

@@ -1452,7 +1452,50 @@ function getActiveShortEvent(){
 
   });
 
-  if(candidates.length === 0) return null;
+ if(candidates.length === 0){
+
+  // 🔥 FALLBACK: show nearest upcoming event
+  let fallback = [];
+
+  shortEvents.forEach(e => {
+
+    if(!e.active) return;
+
+    let start = new Date(e.start);
+    let durationMs = e.duration * 60 * 1000;
+    let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
+
+    let nextStart = new Date(start);
+
+    if(repeatMs > 0){
+      while(nextStart <= now){
+        nextStart = new Date(nextStart.getTime() + repeatMs);
+      }
+    }
+
+    let end = new Date(nextStart.getTime() + durationMs);
+
+    fallback.push({
+      event: e,
+      state: "prep",
+      priority: e.priority || 999,
+      start: nextStart,
+      end: end
+    });
+
+  });
+
+  if(fallback.length === 0) return null;
+
+  fallback.sort((a,b)=>{
+    if(a.priority !== b.priority){
+      return a.priority - b.priority;
+    }
+    return a.start - b.start;
+  });
+
+  return fallback[0];
+}
 
   // 🔥 SORT: Active > Prep > Cooldown
   candidates.sort((a,b)=>{

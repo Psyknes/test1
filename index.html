@@ -1302,6 +1302,26 @@ console.log("Ticker load error", e);
 
 }
 
+function formatHM(ms){
+  let totalSec = Math.floor(ms / 1000);
+  let h = Math.floor(totalSec / 3600);
+  let m = Math.floor((totalSec % 3600) / 60);
+  return `${h}h ${m}m`;
+}
+
+function formatTime12(date){
+  let h = date.getHours();
+  let m = date.getMinutes();
+
+  let ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12;
+  h = h ? h : 12;
+
+  let mm = m < 10 ? "0" + m : m;
+
+  return `${h}:${mm} ${ampm}`;
+}  
+  
 async function loadSpecialEvents(){
   try{
 
@@ -1332,78 +1352,78 @@ function getActiveShortEvent(){
 
     let start = new Date(e.start);
     let durationMs = e.duration * 60 * 1000;
+    let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
 
-    // 🔴 REPEATING EVENTS
-    if(e.repeat > 0){
+    let alertOffset = 30 * 60 * 1000; // 30 mins
 
-      let repeatMs = e.repeat * 60 * 60 * 1000;
+    // 🔁 HANDLE REPEATING EVENTS
+    if(repeatMs > 0){
 
-      // 🔥 find NEXT cycle
       let cycleStart = new Date(start);
 
+      // move to NEXT cycle
       while(cycleStart <= now){
         cycleStart = new Date(cycleStart.getTime() + repeatMs);
       }
 
-      // 🔥 previous cycle
+      // previous cycle
       let prevStart = new Date(cycleStart.getTime() - repeatMs);
-      let prevEnd = new Date(prevStart.getTime() + durationMs);
 
-      let state = "prep";
+      let alertStart = new Date(prevStart.getTime() - alertOffset);
+      let end = new Date(prevStart.getTime() + durationMs);
 
-      if(now >= prevStart && now <= prevEnd){
-        state = "active";
-      }
-      else if(now < cycleStart){
-        state = "prep";
-      }
-      else{
-        state = "cooldown";
-      }
+      let state = null;
 
-      candidates.push({
-        event: e,
-        state: state,
-        priority: (e.priority !== undefined ? e.priority : 999),
-        start: state === "active" ? prevStart : cycleStart,
-        end: state === "active" ? prevEnd : new Date(cycleStart.getTime() + durationMs)
-      });
+      // 🔥 ONLY consider events inside priority window
+      if(now >= alertStart && now <= end){
+
+        if(now < prevStart){
+          state = "prep";
+        }
+        else if(now >= prevStart && now <= end){
+          let remaining = end - now;
+          state = remaining <= 5 * 60 * 1000 ? "cooldown" : "active";
+        }
+
+        candidates.push({
+          event: e,
+          state: state,
+          priority: e.priority || 999,
+          start: prevStart,
+          end: end,
+          alertStart: alertStart
+        });
+      }
 
     }
 
-    // 🔵 NON-REPEATING EVENTS
+    // 🔵 NON-REPEATING
     else{
 
+      let alertStart = new Date(start.getTime() - alertOffset);
       let end = new Date(start.getTime() + durationMs);
 
-      if(now < start){
+      if(now >= alertStart && now <= end){
 
-        // PREP
-        candidates.push({
-          event: e,
-          state: "prep",
-          priority: e.priority || 999,
-          start: start,
-          end: end
-        });
+        let state = null;
 
-      }
-      else if(now >= start && now <= end){
-
-        // ACTIVE / COOLDOWN
-        let remaining = end - now;
+        if(now < start){
+          state = "prep";
+        }
+        else{
+          let remaining = end - now;
+          state = remaining <= 5 * 60 * 1000 ? "cooldown" : "active";
+        }
 
         candidates.push({
           event: e,
-          state: remaining <= 5 * 60 * 1000 ? "cooldown" : "active",
+          state: state,
           priority: e.priority || 999,
           start: start,
-          end: end
+          end: end,
+          alertStart: alertStart
         });
-
       }
-
-      // after end → ignore
 
     }
 
@@ -1411,7 +1431,7 @@ function getActiveShortEvent(){
 
   if(candidates.length === 0) return null;
 
-  // 🔥 PRIORITY SORT
+  // 🔥 SORT: Active > Prep > Cooldown
   candidates.sort((a,b)=>{
 
     let order = {active:0, prep:1, cooldown:2};
@@ -1429,54 +1449,71 @@ function getActiveShortEvent(){
   
 function updateSpecialBar(){
 
-let data = getActiveShortEvent();
+  let data = getActiveShortEvent();
 
-if(!data){
-document.getElementById("ghoulionTimer").innerHTML = "";
-return;
-}
+  let timerEl = document.getElementById("ghoulionTimer");
+  let titleEl = document.getElementById("ghoulionTitle");
+  let imgEl = document.getElementById("ghoulionImg");
 
-let e = data.event;   // ✅ DEFINE FIRST
-document.getElementById("ghoulionTitle").innerText = e.name;
-document.getElementById("ghoulionTitle").style.color = e.color || "#ffd54f";  
+  if(!data){
+    timerEl.innerHTML = "";
+    return;
+  }
 
-// 🔥 NOW SAFE TO USE
-let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
-let imgSrc = "images/events/" + imgName + ".png";
+  let e = data.event;
 
-document.getElementById("ghoulionImg").src = imgSrc;
+  // 🔥 TITLE + COLOR
+  titleEl.innerText = e.name;
+  titleEl.style.color = e.color || "#ffd54f";
 
-let now = new Date();
+  // 🔥 IMAGE
+  let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
+  imgEl.src = "images/events/" + imgName + ".png";
 
-let remaining = data.end - now;
+  let now = new Date();
 
-let h = Math.floor(remaining / 1000 / 60 / 60);
-let m = Math.floor((remaining / 1000 / 60) % 60);
+  let label = "";
+  let timeText = "";
 
-let localTime = data.end.toLocaleTimeString([],{
-hour:'2-digit',
-minute:'2-digit',
-hour12:true
-});
+  // 🟡 PREP
+  if(data.state === "prep"){
+    let remaining = data.start - now;
+    label = "Get Ready";
+    timeText = `Starts in ${formatHM(remaining)}`;
+  }
 
-let label = "Next";
+  // 🔴 ACTIVE
+  else if(data.state === "active"){
+    let remaining = data.end - now;
+    label = "Fight";
+    timeText = `Ends in ${formatHM(remaining)}`;
+  }
 
-if(data.state === "active") label = "Active";
-if(data.state === "prep") label = "Next";
-if(data.state === "cooldown") label = "Wrap";
+  // ⚫ COOLDOWN
+  else if(data.state === "cooldown"){
+    let remaining = data.end - now;
+    label = "Wrap";
+    timeText = `Ends in ${formatHM(remaining)}`;
+  }
 
-let barClass = "ghoulionBar";
+  // 🔥 TIME RANGE
+  let timeRange = `${formatTime12(data.start)} - ${formatTime12(data.end)}`;
 
-if(data.state === "active") barClass += " active";
-if(data.state === "prep") barClass += " alert";
+  // 🔥 BAR STYLE
+  let barClass = "ghoulionBar";
+  if(data.state === "active") barClass += " active";
+  if(data.state === "prep") barClass += " alert";
 
-let timerText =
-"<div class='" + barClass + "'>" +
-label + " • " + localTime +
-" • " + h + "h " + m + "m</div>";
-
-document.getElementById("ghoulionTimer").innerHTML = timerText;
-
+  // 🔥 FINAL OUTPUT
+  timerEl.innerHTML = `
+    <div class="${barClass}">
+      ${label}
+      <span style="margin:0 6px;">•</span>
+      ${timeText}
+      <span style="margin:0 6px;">•</span>
+      ${timeRange}
+    </div>
+  `;
 }
 
 function updateLongEventTicker(){

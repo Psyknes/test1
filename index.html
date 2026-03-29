@@ -1090,7 +1090,7 @@ if(m.mode === "rotate" && m.rotate.length){
 
   let now = Date.now();
 
-  if(now - maintenanceLastSwitch > m.interval * 50){
+  if(now - maintenanceLastSwitch > m.interval * 1000){
     maintenanceMessageIndex = (maintenanceMessageIndex + 1) % m.rotate.length;
     maintenanceLastSwitch = now;
   }

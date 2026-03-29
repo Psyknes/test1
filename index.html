@@ -1001,55 +1001,6 @@ if(maintenanceData.emergency?.main){
 let s = maintenanceData.scheduled;
 if(!s || !s.main) return "normal";
 
-// 🔥 get THIS week's Monday 00:00 UTC
-let currentDay = now.getUTCDay();
-let diff = currentDay - s.day;
-
-let start = new Date(now);
-start.setUTCHours(s.hour,0,0,0);
-start.setUTCDate(now.getUTCDate() - diff);
-
-// ⚠️ if future, shift back a week
-if(start > now){
-  start.setUTCDate(start.getUTCDate() - 7);
-}
-
-let duration = s.duration;
-
-// 🔥 duration > 0
-if(duration > 0){
-
-  let end = new Date(start.getTime() + duration * 60000);
-
-  if(now >= start && now <= end){
-    return "scheduled";
-  }
-
-}else{
-  // 🔥 duration = 0 → infinite
-  if(now >= start){
-    return "scheduled";
-  }
-}
-
-return "normal";
-}  
-
-function getMaintenanceState(){
-
-if(!maintenanceData) return "normal";
-
-let now = new Date();
-
-// 🔴 EMERGENCY
-if(maintenanceData.emergency?.main){
-  return "emergency";
-}
-
-// 🟡 SCHEDULED
-let s = maintenanceData.scheduled;
-if(!s || !s.main) return "normal";
-
 let currentDay = now.getUTCDay();
 let diff = currentDay - s.day;
 

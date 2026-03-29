@@ -1017,6 +1017,11 @@ if(start > now){
 
 let duration = s.duration;
 
+// 🔥 INFINITE MODE (duration = 0)
+if(duration === 0){
+  return "scheduled";
+}
+
 // 🔥 NORMAL WINDOW (duration > 0)
 if(duration > 0){
   let end = new Date(start.getTime() + duration * 60000);

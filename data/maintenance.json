@@ -1,13 +1,13 @@
 {
   "emergency": {
-    "main": true
+    "main": false
   },
 
   "scheduled": {
     "main": true,
     "day": 1,
     "hour": 0,
-    "duration": 120
+    "duration": o
   },
 
   "messages": {

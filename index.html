@@ -1377,14 +1377,23 @@ function getActiveShortEvent(){
 
     if(!e.active) return;
 
-    let alertStart = new Date(e.alertStart);
-    let start = new Date(e.start);
-    let end = new Date(e.end);
+    let baseAlert = new Date(e.alertStart);
+    let baseStart = new Date(e.start);
+    let baseEnd = new Date(e.end);
 
     let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
 
-    // 🔁 SHIFT TO CURRENT / NEXT VALID CYCLE
+    let alertStart = new Date(baseAlert);
+    let start = new Date(baseStart);
+    let end = new Date(baseEnd);
+
+    // 🔁 MOVE TO LAST CYCLE (NOT NEXT)
     if(repeatMs > 0){
+      while(start > now){
+        alertStart = new Date(alertStart.getTime() - repeatMs);
+        start = new Date(start.getTime() - repeatMs);
+        end = new Date(end.getTime() - repeatMs);
+      }
       while(end < now){
         alertStart = new Date(alertStart.getTime() + repeatMs);
         start = new Date(start.getTime() + repeatMs);
@@ -1392,26 +1401,19 @@ function getActiveShortEvent(){
       }
     }
 
-    // 🔁 NEXT START (for cooldown)
-    let nextStart = new Date(start);
-    if(repeatMs > 0){
-      nextStart = new Date(start.getTime() + repeatMs);
-    }
+    let nextStart = new Date(start.getTime() + repeatMs);
 
     let state = "";
 
-    if(now < alertStart){
-      state = "cooldown";
-    }
-    else if(now < start){
+    if(now >= alertStart && now < start){
       state = "alert";
     }
-    else if(now <= end){
+    else if(now >= start && now <= end){
       state = "active";
     }
     else{
       state = "cooldown";
-      start = nextStart;
+      start = nextStart; // 🔥 important for display
     }
 
     let item = {
@@ -1423,7 +1425,6 @@ function getActiveShortEvent(){
       nextStart: nextStart
     };
 
-    // 🔥 GROUPING LOGIC
     if(state === "alert" || state === "active"){
       activeOrAlert.push(item);
     }else{
@@ -1431,8 +1432,6 @@ function getActiveShortEvent(){
     }
 
   });
-
-  // 🔥 PRIORITY SELECTION
 
   let pool = activeOrAlert.length > 0 ? activeOrAlert : cooldownList;
 

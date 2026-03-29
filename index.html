@@ -1326,7 +1326,7 @@ console.log("Ticker load error", e);
 }
 
 function formatHM(ms){
-  ms = Math.max(0, ms); // 🔥 prevents negative time
+  ms = Math.max(0, ms);
 
   let totalSec = Math.floor(ms / 1000);
   let h = Math.floor(totalSec / 3600);
@@ -1334,7 +1334,6 @@ function formatHM(ms){
 
   return `${h}h ${m}m`;
 }
-
 function formatTime12(date){
   let h = date.getHours();
   let m = date.getMinutes();
@@ -1376,50 +1375,51 @@ function getActiveShortEvent(){
 
     if(!e.active) return;
 
+    let alertStart = new Date(e.alertStart);
     let start = new Date(e.start);
-    let durationMs = e.duration * 60 * 1000;
+    let end = new Date(e.end);
+
     let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
-    let alertOffset = 30 * 60 * 1000;
 
-    let cycleStart = new Date(start);
-
-    // 🔥 move to NEXT cycle
+    // 🔁 handle repeat
     if(repeatMs > 0){
-      while(cycleStart <= now){
+
+      let cycleAlert = new Date(alertStart);
+      let cycleStart = new Date(start);
+      let cycleEnd = new Date(end);
+
+      while(cycleEnd < now){
+        cycleAlert = new Date(cycleAlert.getTime() + repeatMs);
         cycleStart = new Date(cycleStart.getTime() + repeatMs);
+        cycleEnd = new Date(cycleEnd.getTime() + repeatMs);
       }
+
+      alertStart = cycleAlert;
+      start = cycleStart;
+      end = cycleEnd;
     }
 
-    let prevStart = new Date(cycleStart.getTime() - repeatMs);
-    let prevEnd = new Date(prevStart.getTime() + durationMs);
-    let alertStart = new Date(prevStart.getTime() - alertOffset);
+    // 🔥 ONLY consider alert → end window
+    if(now >= alertStart && now <= end){
 
-    // 🔥 only include events inside alert → end window
-    if(now >= alertStart && now <= prevEnd){
-
-      let state = "prep";
-
-      if(now >= prevStart && now <= prevEnd){
-        let remaining = prevEnd - now;
-        state = remaining <= 5 * 60 * 1000 ? "cooldown" : "active";
-      }
+      let state = (now < start) ? "prep" : "active";
 
       candidates.push({
         event: e,
         state: state,
         priority: e.priority || 999,
-        start: prevStart,
-        end: prevEnd
+        start: start,
+        end: end
       });
     }
 
   });
 
-  // 🔥 NORMAL CASE
+  // ✅ NORMAL CASE
   if(candidates.length > 0){
 
     candidates.sort((a,b)=>{
-      let order = {active:0, prep:1, cooldown:2};
+      let order = {active:0, prep:1};
 
       if(order[a.state] !== order[b.state]){
         return order[a.state] - order[b.state];
@@ -1431,33 +1431,33 @@ function getActiveShortEvent(){
     return candidates[0];
   }
 
-  // 🔥 FALLBACK (ALWAYS SHOW NEXT EVENT)
+  // 🔥 FALLBACK → next upcoming event
   let fallback = [];
 
   shortEvents.forEach(e => {
 
     if(!e.active) return;
 
+    let alertStart = new Date(e.alertStart);
     let start = new Date(e.start);
-    let durationMs = e.duration * 60 * 1000;
+    let end = new Date(e.end);
+
     let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
 
-    let nextStart = new Date(start);
-
     if(repeatMs > 0){
-      while(nextStart <= now){
-        nextStart = new Date(nextStart.getTime() + repeatMs);
+      while(start <= now){
+        alertStart = new Date(alertStart.getTime() + repeatMs);
+        start = new Date(start.getTime() + repeatMs);
+        end = new Date(end.getTime() + repeatMs);
       }
     }
-
-    let nextEnd = new Date(nextStart.getTime() + durationMs);
 
     fallback.push({
       event: e,
       state: "prep",
       priority: e.priority || 999,
-      start: nextStart,
-      end: nextEnd
+      start: start,
+      end: end
     });
 
   });
@@ -1499,30 +1499,22 @@ function updateSpecialBar(){
   imgEl.src = "images/events/" + imgName + ".png";
 
   let now = new Date();
-  let text = "";
+let text = "";
 
-  // 🟢 PREP → Starts in
- let remainingStart = data.start - now;
-let remainingEnd = data.end - now;
-
-// 🔴 If start already passed → treat as active
-if(remainingStart <= 0){
-  text = `<span style="color:#ff4d4d;">Ends in ${formatHM(Math.max(0, remainingEnd))}</span>`;
+if(data.state === "prep"){
+  let remaining = data.start - now;
+  text = `<span style="color:#4CAF50;">Starts in ${formatHM(remaining)}</span>`;
 }
 else{
-  text = `<span style="color:#4CAF50;">Starts in ${formatHM(remainingStart)}</span>`;
+  let remaining = data.end - now;
+  text = `<span style="color:#ff4d4d;">Ends in ${formatHM(remaining)}</span>`;
 }
 
-  // 🔥 APPLY TO UI
-  let barClass = "ghoulionBar";
-  if(data.state === "active") barClass += " active";
-  if(data.state === "prep") barClass += " alert";
-
-  timerEl.innerHTML = `
-    <div class="${barClass}">
-      ${text}
-    </div>
-  `;
+timerEl.innerHTML = `
+  <div class="${barClass}">
+    ${text}
+  </div>
+`;
 }
 
 function updateLongEventTicker(){

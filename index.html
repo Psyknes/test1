@@ -1482,35 +1482,60 @@ function updateSpecialBar(){
   let titleEl = document.getElementById("ghoulionTitle");
   let imgEl = document.getElementById("ghoulionImg");
 
-  // 🔴 NO EVENT (safety fallback)
   if(!data){
-    timerEl.innerHTML = "<span style='color:#777;'>No upcoming event</span>";
+    timerEl.innerHTML = "";
     return;
   }
 
   let e = data.event;
 
-  // 🔥 TITLE
+  // title + image
   titleEl.innerText = e.name;
   titleEl.style.color = e.color || "#ffd54f";
 
-  // 🔥 IMAGE
   let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
   imgEl.src = "images/events/" + imgName + ".png";
 
   let now = new Date();
-let text = "";
 
-if(data.state === "prep"){
-  let remaining = data.start - now;
-  text = `<span style="color:#4CAF50;">Starts in ${formatHM(remaining)}</span>`;
-}
-else{
-  let remaining = data.end - now;
-  text = `<span style="color:#ff4d4d;">Ends in ${formatHM(remaining)}</span>`;
-}
+  let label = "";
+  let remaining = 0;
+  let timeRef = null;
 
-timerEl.innerHTML = text;
+  if(data.state === "prep"){
+    label = "Starts in";
+    remaining = data.start - now;
+    timeRef = data.start;
+  }else{
+    label = "Ends in";
+    remaining = data.end - now;
+    timeRef = data.end;
+  }
+
+  let h = Math.floor(remaining / 1000 / 60 / 60);
+  let m = Math.floor((remaining / 1000 / 60) % 60);
+
+  let localTime = timeRef.toLocaleTimeString([],{
+    hour:'2-digit',
+    minute:'2-digit',
+    hour12:true
+  });
+
+  // 🔥 RESTORE OLD STYLE
+  let barClass = "ghoulionBar";
+
+  if(data.state === "active") barClass += " active";
+  if(data.state === "prep") barClass += " alert";
+
+  let color = data.state === "active" ? "#ff6b6b" : "#4cff88";
+
+  timerEl.innerHTML =
+    `<div class="${barClass}">
+      <span style="color:${color}">
+        ${label} ${h}h ${m}m
+      </span>
+      <span class="ghTimer"> • ${localTime}</span>
+    </div>`;
 }
 
 function updateLongEventTicker(){

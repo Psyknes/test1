@@ -1376,85 +1376,59 @@ function getActiveShortEvent(){
     let start = new Date(e.start);
     let durationMs = e.duration * 60 * 1000;
     let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
+    let alertOffset = 30 * 60 * 1000;
 
-    let alertOffset = 30 * 60 * 1000; // 30 mins
+    let cycleStart = new Date(start);
 
-    // 🔁 HANDLE REPEATING EVENTS
+    // 🔥 move to NEXT cycle
     if(repeatMs > 0){
-
-      let cycleStart = new Date(start);
-
-      // move to NEXT cycle
       while(cycleStart <= now){
         cycleStart = new Date(cycleStart.getTime() + repeatMs);
       }
-
-      // previous cycle
-      let prevStart = new Date(cycleStart.getTime() - repeatMs);
-
-      let alertStart = new Date(prevStart.getTime() - alertOffset);
-      let end = new Date(prevStart.getTime() + durationMs);
-
-      let state = null;
-
-      // 🔥 ONLY consider events inside priority window
-      if(now >= alertStart && now <= end){
-
-        if(now < prevStart){
-          state = "prep";
-        }
-        else if(now >= prevStart && now <= end){
-          let remaining = end - now;
-          state = remaining <= 5 * 60 * 1000 ? "cooldown" : "active";
-        }
-
-        candidates.push({
-          event: e,
-          state: state,
-          priority: e.priority || 999,
-          start: prevStart,
-          end: end,
-          alertStart: alertStart
-        });
-      }
-
     }
 
-    // 🔵 NON-REPEATING
-    else{
+    let prevStart = new Date(cycleStart.getTime() - repeatMs);
+    let prevEnd = new Date(prevStart.getTime() + durationMs);
+    let alertStart = new Date(prevStart.getTime() - alertOffset);
 
-      let alertStart = new Date(start.getTime() - alertOffset);
-      let end = new Date(start.getTime() + durationMs);
+    // 🔥 only include events inside alert → end window
+    if(now >= alertStart && now <= prevEnd){
 
-      if(now >= alertStart && now <= end){
+      let state = "prep";
 
-        let state = null;
-
-        if(now < start){
-          state = "prep";
-        }
-        else{
-          let remaining = end - now;
-          state = remaining <= 5 * 60 * 1000 ? "cooldown" : "active";
-        }
-
-        candidates.push({
-          event: e,
-          state: state,
-          priority: e.priority || 999,
-          start: start,
-          end: end,
-          alertStart: alertStart
-        });
+      if(now >= prevStart && now <= prevEnd){
+        let remaining = prevEnd - now;
+        state = remaining <= 5 * 60 * 1000 ? "cooldown" : "active";
       }
 
+      candidates.push({
+        event: e,
+        state: state,
+        priority: e.priority || 999,
+        start: prevStart,
+        end: prevEnd
+      });
     }
 
   });
 
- if(candidates.length === 0){
+  // 🔥 NORMAL CASE
+  if(candidates.length > 0){
 
-  // 🔥 FALLBACK: show nearest upcoming event
+    candidates.sort((a,b)=>{
+      let order = {active:0, prep:1, cooldown:2};
+
+      if(order[a.state] !== order[b.state]){
+        return order[a.state] - order[b.state];
+      }
+
+      return a.priority - b.priority;
+    });
+
+    return candidates[0];
+  }
+
+  // 🔥 FALLBACK (ALWAYS SHOW NEXT EVENT)
   let fallback = [];
 
   shortEvents.forEach(e => {
@@ -1473,14 +1447,14 @@ function getActiveShortEvent(){
       }
     }
 
-    let end = new Date(nextStart.getTime() + durationMs);
+    let nextEnd = new Date(nextStart.getTime() + durationMs);
 
     fallback.push({
       event: e,
       state: "prep",
       priority: e.priority || 999,
       start: nextStart,
-      end: end
+      end: nextEnd
     });
 
   });
@@ -1496,22 +1470,6 @@ function getActiveShortEvent(){
 
   return fallback[0];
 }
-
-  // 🔥 SORT: Active > Prep > Cooldown
-  candidates.sort((a,b)=>{
-
-    let order = {active:0, prep:1, cooldown:2};
-
-    if(order[a.state] !== order[b.state]){
-      return order[a.state] - order[b.state];
-    }
-
-    return a.priority - b.priority;
-
-  });
-
-  return candidates[0];
-}
   
 function updateSpecialBar(){
 
@@ -1521,14 +1479,15 @@ function updateSpecialBar(){
   let titleEl = document.getElementById("ghoulionTitle");
   let imgEl = document.getElementById("ghoulionImg");
 
+  // 🔴 NO EVENT (safety fallback)
   if(!data){
-    timerEl.innerHTML = "";
+    timerEl.innerHTML = "<span style='color:#777;'>No upcoming event</span>";
     return;
   }
 
   let e = data.event;
 
-  // 🔥 TITLE + COLOR
+  // 🔥 TITLE
   titleEl.innerText = e.name;
   titleEl.style.color = e.color || "#ffd54f";
 
@@ -1537,47 +1496,28 @@ function updateSpecialBar(){
   imgEl.src = "images/events/" + imgName + ".png";
 
   let now = new Date();
+  let text = "";
 
-  let label = "";
-  let timeText = "";
-
-  // 🟡 PREP
+  // 🟢 PREP → Starts in
   if(data.state === "prep"){
     let remaining = data.start - now;
-    label = "Get Ready";
-    timeText = `Starts in ${formatHM(remaining)}`;
+    text = `<span style="color:#4CAF50;">Starts in ${formatHM(remaining)}</span>`;
   }
 
-  // 🔴 ACTIVE
-  else if(data.state === "active"){
+  // 🔴 ACTIVE + COOLDOWN → Ends in
+  else{
     let remaining = data.end - now;
-    label = "Fight";
-    timeText = `Ends in ${formatHM(remaining)}`;
+    text = `<span style="color:#ff4d4d;">Ends in ${formatHM(remaining)}</span>`;
   }
 
-  // ⚫ COOLDOWN
-  else if(data.state === "cooldown"){
-    let remaining = data.end - now;
-    label = "Wrap";
-    timeText = `Ends in ${formatHM(remaining)}`;
-  }
-
-  // 🔥 TIME RANGE
-  let timeRange = `${formatTime12(data.start)} - ${formatTime12(data.end)}`;
-
-  // 🔥 BAR STYLE
+  // 🔥 APPLY TO UI
   let barClass = "ghoulionBar";
   if(data.state === "active") barClass += " active";
   if(data.state === "prep") barClass += " alert";
 
-  // 🔥 FINAL OUTPUT
   timerEl.innerHTML = `
     <div class="${barClass}">
-      ${label}
-      <span style="margin:0 6px;">•</span>
-      ${timeText}
-      <span style="margin:0 6px;">•</span>
-      ${timeRange}
+      ${text}
     </div>
   `;
 }

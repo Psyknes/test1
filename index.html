@@ -1090,7 +1090,13 @@ if(m.mode === "rotate" && m.rotate.length){
 
   let now = Date.now();
 
-  if(now - maintenanceLastSwitch > m.interval * 1000){
+  // 🔥 FIRST TIME INIT (IMPORTANT FIX)
+  if(maintenanceLastSwitch === 0){
+    maintenanceLastSwitch = now;
+  }
+
+  // 🔁 ROTATE
+  if(now - maintenanceLastSwitch >= m.interval * 1000){
     maintenanceMessageIndex = (maintenanceMessageIndex + 1) % m.rotate.length;
     maintenanceLastSwitch = now;
   }
@@ -1100,7 +1106,7 @@ if(m.mode === "rotate" && m.rotate.length){
 }else{
   msgBox.innerText = m.static;
 }
-}  
+}
 
 function updateMaintenanceTimer(){
 

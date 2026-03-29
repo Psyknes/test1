@@ -1343,11 +1343,41 @@ if(e.repeat > 0){
 let repeatMs = e.repeat * 60 * 60 * 1000;
 
 // 🔥 FIX: handle first cycle properly
-let diff = now - start;
+let repeatMs = e.repeat * 60 * 60 * 1000;
 
-let cycle = diff < 0 ? 0 : Math.floor(diff / repeatMs);
-let cycleStart = new Date(start.getTime() + cycle * e.repeat * 60 * 60 * 1000);
-let cycleEnd = new Date(cycleStart.getTime() + durationMs);
+// 🔥 find NEXT cycle correctly
+let cycleStart = new Date(start);
+
+while(cycleStart <= now){
+  cycleStart = new Date(cycleStart.getTime() + repeatMs);
+}
+
+// 🔥 previous cycle
+let prevStart = new Date(cycleStart.getTime() - repeatMs);
+let prevEnd = new Date(prevStart.getTime() + durationMs);
+
+// 🔥 classify correctly
+let active = false;
+let prep = false;
+let cooldown = false;
+
+if(now >= prevStart && now <= prevEnd){
+  active = true;
+}
+else if(now < cycleStart){
+  prep = true;
+}
+else{
+  cooldown = true;
+}
+
+candidates.push({
+  event:e,
+  state: active ? "active" : prep ? "prep" : "cooldown",
+  priority: (e.priority !== undefined ? e.priority : 999),
+  start: active ? prevStart : cycleStart,
+  end: active ? prevEnd : new Date(cycleStart.getTime() + durationMs)
+});
 
 let remaining = cycleEnd - now;
 

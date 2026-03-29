@@ -1811,8 +1811,9 @@ function buildTaskMap(){
 }
 
 function classifyTasks(){
-if(rawData.length){
+if(window.debugMode){
   console.log("RAW DATA SAMPLE:", rawData[0]);
+}
 }
   let tasks = buildTaskMap();
 

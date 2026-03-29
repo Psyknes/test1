@@ -883,6 +883,11 @@ height:80px;
   margin: 0 6px;
   color: #555;
 }
+
+.ghoulionBar.cooldown {
+  opacity: 0.7;
+  box-shadow: none;
+}
   
 </style>
 </head>
@@ -1454,37 +1459,39 @@ function updateSpecialBar(){
 
   let e = data.event;
 
-  // title + image
+  // 🔹 TITLE + COLOR
   titleEl.innerText = e.name;
   titleEl.style.color = e.color || "#ffd54f";
 
+  // 🔹 IMAGE
   let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
   imgEl.src = "images/events/" + imgName + ".png";
 
   let now = new Date();
 
-let label = "";
-let remaining = 0;
-let timeRef = null;
+  let label = "";
+  let remaining = 0;
+  let timeRef = null;
 
-if(data.state === "cooldown"){
-  label = "Next";
-  remaining = data.start - now;
-  timeRef = data.start;
-}
-else if(data.state === "alert"){
-  label = "Starts in";
-  remaining = data.start - now;
-  timeRef = data.start;
-}
-else{
-  label = "Ends in";
-  remaining = data.end - now;
-  timeRef = data.end;
-}
+  // 🔥 STATE HANDLING
+  if(data.state === "cooldown"){
+    label = "Next";
+    remaining = data.start - now;
+    timeRef = data.start;
+  }
+  else if(data.state === "alert"){
+    label = "Starts in";
+    remaining = data.start - now;
+    timeRef = data.start;
+  }
+  else{
+    label = "Ends in";
+    remaining = data.end - now;
+    timeRef = data.end;
+  }
 
-// 🔥 SAFETY (prevents negative display)
-remaining = Math.max(0, remaining);
+  // 🔥 prevent negative values
+  remaining = Math.max(0, remaining);
 
   let h = Math.floor(remaining / 1000 / 60 / 60);
   let m = Math.floor((remaining / 1000 / 60) % 60);
@@ -1495,14 +1502,20 @@ remaining = Math.max(0, remaining);
     hour12:true
   });
 
-  // 🔥 RESTORE OLD STYLE
+  // 🔥 CLASS HANDLING (FIXED)
   let barClass = "ghoulionBar";
 
   if(data.state === "active") barClass += " active";
-  if(data.state === "prep") barClass += " alert";
+  else if(data.state === "alert") barClass += " alert";
+  else barClass += " cooldown";
 
-  let color = data.state === "active" ? "#ff6b6b" : "#4cff88";
+  // 🔥 COLOR HANDLING (FIXED)
+  let color = "#bbb"; // cooldown default
 
+  if(data.state === "active") color = "#ff6b6b";     // red
+  else if(data.state === "alert") color = "#4cff88"; // green
+
+  // 🔥 FINAL RENDER (OLD STYLE PRESERVED)
   timerEl.innerHTML =
     `<div class="${barClass}">
       <span style="color:${color}">

@@ -1369,7 +1369,9 @@ async function loadSpecialEvents(){
 function getActiveShortEvent(){
 
   let now = new Date();
-  let candidates = [];
+
+  let activeOrAlert = [];
+  let cooldownList = [];
 
   shortEvents.forEach(e => {
 
@@ -1381,97 +1383,66 @@ function getActiveShortEvent(){
 
     let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
 
-    // 🔁 handle repeat
+    // 🔁 SHIFT TO CURRENT / NEXT VALID CYCLE
     if(repeatMs > 0){
-
-      let cycleAlert = new Date(alertStart);
-      let cycleStart = new Date(start);
-      let cycleEnd = new Date(end);
-
-      while(cycleEnd < now){
-        cycleAlert = new Date(cycleAlert.getTime() + repeatMs);
-        cycleStart = new Date(cycleStart.getTime() + repeatMs);
-        cycleEnd = new Date(cycleEnd.getTime() + repeatMs);
-      }
-
-      alertStart = cycleAlert;
-      start = cycleStart;
-      end = cycleEnd;
-    }
-
-    // 🔥 ONLY consider alert → end window
-    if(now >= alertStart && now <= end){
-
-      let state = (now < start) ? "prep" : "active";
-
-      candidates.push({
-        event: e,
-        state: state,
-        priority: e.priority || 999,
-        start: start,
-        end: end
-      });
-    }
-
-  });
-
-  // ✅ NORMAL CASE
-  if(candidates.length > 0){
-
-    candidates.sort((a,b)=>{
-      let order = {active:0, prep:1};
-
-      if(order[a.state] !== order[b.state]){
-        return order[a.state] - order[b.state];
-      }
-
-      return a.priority - b.priority;
-    });
-
-    return candidates[0];
-  }
-
-  // 🔥 FALLBACK → next upcoming event
-  let fallback = [];
-
-  shortEvents.forEach(e => {
-
-    if(!e.active) return;
-
-    let alertStart = new Date(e.alertStart);
-    let start = new Date(e.start);
-    let end = new Date(e.end);
-
-    let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
-
-    if(repeatMs > 0){
-      while(start <= now){
+      while(end < now){
         alertStart = new Date(alertStart.getTime() + repeatMs);
         start = new Date(start.getTime() + repeatMs);
         end = new Date(end.getTime() + repeatMs);
       }
     }
 
-    fallback.push({
+    // 🔁 NEXT START (for cooldown)
+    let nextStart = new Date(start);
+    if(repeatMs > 0){
+      nextStart = new Date(start.getTime() + repeatMs);
+    }
+
+    let state = "";
+
+    if(now < alertStart){
+      state = "cooldown";
+    }
+    else if(now < start){
+      state = "alert";
+    }
+    else if(now <= end){
+      state = "active";
+    }
+    else{
+      state = "cooldown";
+      start = nextStart;
+    }
+
+    let item = {
       event: e,
-      state: "prep",
+      state: state,
       priority: e.priority || 999,
       start: start,
-      end: end
-    });
+      end: end,
+      nextStart: nextStart
+    };
 
-  });
-
-  if(fallback.length === 0) return null;
-
-  fallback.sort((a,b)=>{
-    if(a.priority !== b.priority){
-      return a.priority - b.priority;
+    // 🔥 GROUPING LOGIC
+    if(state === "alert" || state === "active"){
+      activeOrAlert.push(item);
+    }else{
+      cooldownList.push(item);
     }
-    return a.start - b.start;
+
   });
 
-  return fallback[0];
+  // 🔥 PRIORITY SELECTION
+
+  let pool = activeOrAlert.length > 0 ? activeOrAlert : cooldownList;
+
+  if(pool.length === 0) return null;
+
+  pool.sort((a,b)=>{
+    return a.priority - b.priority;
+  });
+
+  return pool[0];
 }
   
 function updateSpecialBar(){

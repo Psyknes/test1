@@ -1377,29 +1377,24 @@ function getActiveShortEvent(){
 
     if(!e.active) return;
 
-    let alertStart = new Date(e.alert_start || e.alertStart);
-    let start = new Date(e.start);
-    let end = new Date(e.end);
+    let baseAlert = new Date(e.alert_start || e.alertStart);
+    let baseStart = new Date(e.start);
+    let baseEnd = new Date(e.end);
 
     let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
 
-    // 🔁 STEP 1: move forward UNTIL we pass now
+    let cycles = 0;
+
     if(repeatMs > 0){
-      while(end < now){
-        alertStart = new Date(alertStart.getTime() + repeatMs);
-        start = new Date(start.getTime() + repeatMs);
-        end = new Date(end.getTime() + repeatMs);
-      }
+      cycles = Math.floor((now - baseStart) / repeatMs);
     }
 
-    // 🔁 STEP 2: if we overshot into future, go back ONE cycle
-    if(start > now && repeatMs > 0){
-      alertStart = new Date(alertStart.getTime() - repeatMs);
-      start = new Date(start.getTime() - repeatMs);
-      end = new Date(end.getTime() - repeatMs);
-    }
+    // 🔥 CURRENT cycle
+    let alertStart = new Date(baseAlert.getTime() + cycles * repeatMs);
+    let start = new Date(baseStart.getTime() + cycles * repeatMs);
+    let end = new Date(baseEnd.getTime() + cycles * repeatMs);
 
-    // 🔁 NEXT cycle (for cooldown display)
+    // 🔥 NEXT cycle
     let nextStart = new Date(start.getTime() + repeatMs);
 
     let state = "";
@@ -1468,19 +1463,30 @@ function updateSpecialBar(){
 
   let now = new Date();
 
-  let label = "";
-  let remaining = 0;
-  let timeRef = null;
+  let now = new Date();
 
-  if(data.state === "prep"){
-    label = "Starts in";
-    remaining = data.start - now;
-    timeRef = data.start;
-  }else{
-    label = "Ends in";
-    remaining = data.end - now;
-    timeRef = data.end;
-  }
+let label = "";
+let remaining = 0;
+let timeRef = null;
+
+if(data.state === "cooldown"){
+  label = "Next";
+  remaining = data.start - now;
+  timeRef = data.start;
+}
+else if(data.state === "alert"){
+  label = "Starts in";
+  remaining = data.start - now;
+  timeRef = data.start;
+}
+else{
+  label = "Ends in";
+  remaining = data.end - now;
+  timeRef = data.end;
+}
+
+// 🔥 SAFETY (prevents negative display)
+remaining = Math.max(0, remaining);
 
   let h = Math.floor(remaining / 1000 / 60 / 60);
   let m = Math.floor((remaining / 1000 / 60) % 60);

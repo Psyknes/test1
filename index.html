@@ -1326,9 +1326,12 @@ console.log("Ticker load error", e);
 }
 
 function formatHM(ms){
+  ms = Math.max(0, ms); // 🔥 prevents negative time
+
   let totalSec = Math.floor(ms / 1000);
   let h = Math.floor(totalSec / 3600);
   let m = Math.floor((totalSec % 3600) / 60);
+
   return `${h}h ${m}m`;
 }
 
@@ -1499,16 +1502,16 @@ function updateSpecialBar(){
   let text = "";
 
   // 🟢 PREP → Starts in
-  if(data.state === "prep"){
-    let remaining = data.start - now;
-    text = `<span style="color:#4CAF50;">Starts in ${formatHM(remaining)}</span>`;
-  }
+ let remainingStart = data.start - now;
+let remainingEnd = data.end - now;
 
-  // 🔴 ACTIVE + COOLDOWN → Ends in
-  else{
-    let remaining = data.end - now;
-    text = `<span style="color:#ff4d4d;">Ends in ${formatHM(remaining)}</span>`;
-  }
+// 🔴 If start already passed → treat as active
+if(remainingStart <= 0){
+  text = `<span style="color:#ff4d4d;">Ends in ${formatHM(Math.max(0, remainingEnd))}</span>`;
+}
+else{
+  text = `<span style="color:#4CAF50;">Starts in ${formatHM(remainingStart)}</span>`;
+}
 
   // 🔥 APPLY TO UI
   let barClass = "ghoulionBar";

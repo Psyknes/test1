@@ -1001,8 +1001,6 @@ if(maintenanceData.emergency?.main){
 let s = maintenanceData.scheduled;
 if(!s || !s.main) return "normal";
 
-let now = new Date();
-
 // 🔥 Find THIS WEEK'S scheduled start
 let start = new Date(now);
 

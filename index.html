@@ -1389,12 +1389,17 @@ function getActiveShortEvent(){
 
     // 🔥 move to LAST cycle before now
     if(repeatMs > 0){
-      while(start > now){
-        alertStart = new Date(alertStart.getTime() - repeatMs);
-        start = new Date(start.getTime() - repeatMs);
-        end = new Date(end.getTime() - repeatMs);
-      }
-    }
+
+  let diff = now - start;
+  let cycles = Math.floor(diff / repeatMs);
+
+  if(cycles > 0){
+    alertStart = new Date(alertStart.getTime() + cycles * repeatMs);
+    start = new Date(start.getTime() + cycles * repeatMs);
+    end = new Date(end.getTime() + cycles * repeatMs);
+  }
+
+}
 
     // 🔥 next cycle
     let nextAlert = new Date(alertStart.getTime() + repeatMs);

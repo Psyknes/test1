@@ -1368,73 +1368,80 @@ async function loadSpecialEvents(){
 
 function getActiveShortEvent(){
 
-let now = new Date();
+  let now = new Date();
 
-let candidates = [];
+  let activeOrAlert = [];
+  let cooldownList = [];
 
-shortEvents.forEach(e => {
+  shortEvents.forEach(e => {
 
-if(!e.active) return;
+    if(!e.active) return;
 
-// ✅ USE EXCEL FIELDS DIRECTLY
-let alertStart = new Date(e.alert_start);
-let start = new Date(e.start);
-let end = new Date(e.end);
+    let alertStart = new Date(e.alert_start || e.alertStart);
+    let start = new Date(e.start);
+    let end = new Date(e.end);
 
-let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
+    let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
 
-// 🔁 cycle alignment (keep your method, but fix inputs)
-if(e.repeat > 0){
+    // 🔁 STEP 1: move forward UNTIL we pass now
+    if(repeatMs > 0){
+      while(end < now){
+        alertStart = new Date(alertStart.getTime() + repeatMs);
+        start = new Date(start.getTime() + repeatMs);
+        end = new Date(end.getTime() + repeatMs);
+      }
+    }
 
-let diff = now - start;
-let cycle = diff < 0 ? 0 : Math.floor(diff / repeatMs);
+    // 🔁 STEP 2: if we overshot into future, go back ONE cycle
+    if(start > now && repeatMs > 0){
+      alertStart = new Date(alertStart.getTime() - repeatMs);
+      start = new Date(start.getTime() - repeatMs);
+      end = new Date(end.getTime() - repeatMs);
+    }
 
-alertStart = new Date(alertStart.getTime() + cycle * repeatMs);
-start = new Date(start.getTime() + cycle * repeatMs);
-end = new Date(end.getTime() + cycle * repeatMs);
-}
+    // 🔁 NEXT cycle (for cooldown display)
+    let nextStart = new Date(start.getTime() + repeatMs);
 
-// 🔁 next cycle (for cooldown display)
-let nextStart = new Date(start.getTime() + repeatMs);
+    let state = "";
 
-let state = "";
+    if(now < alertStart){
+      state = "cooldown";
+      start = nextStart;
+    }
+    else if(now < start){
+      state = "alert";
+    }
+    else if(now <= end){
+      state = "active";
+    }
+    else{
+      state = "cooldown";
+      start = nextStart;
+    }
 
-if(now < alertStart){
-state = "cooldown";
-start = nextStart;
-}
-else if(now < start){
-state = "alert";
-}
-else if(now <= end){
-state = "active";
-}
-else{
-state = "cooldown";
-start = nextStart;
-}
+    let item = {
+      event: e,
+      state: state,
+      priority: e.priority || 999,
+      start: start,
+      end: end
+    };
 
-candidates.push({
-event:e,
-state: state,
-priority: e.priority || 999,
-start: start,
-end: end
-});
+    if(state === "active" || state === "alert"){
+      activeOrAlert.push(item);
+    }else{
+      cooldownList.push(item);
+    }
 
-});
+  });
 
-if(candidates.length === 0) return null;
+  let pool = activeOrAlert.length ? activeOrAlert : cooldownList;
 
-// 🔥 GROUP LOGIC (your rule)
-let activeOrAlert = candidates.filter(c => c.state === "active" || c.state === "alert");
+  if(pool.length === 0) return null;
 
-let pool = activeOrAlert.length ? activeOrAlert : candidates;
+  pool.sort((a,b)=> a.priority - b.priority);
 
-// 🔥 PRIORITY SORT
-pool.sort((a,b)=> a.priority - b.priority);
-
-return pool[0];
+  return pool[0];
 }
   
 function updateSpecialBar(){
@@ -1465,9 +1472,15 @@ function updateSpecialBar(){
   let remaining = 0;
   let timeRef = null;
 
-  if(data.state === "alert") label = "Starts in";
-if(data.state === "cooldown") label = "Next";
-if(data.state === "active") label = "Ends in";
+  if(data.state === "prep"){
+    label = "Starts in";
+    remaining = data.start - now;
+    timeRef = data.start;
+  }else{
+    label = "Ends in";
+    remaining = data.end - now;
+    timeRef = data.end;
+  }
 
   let h = Math.floor(remaining / 1000 / 60 / 60);
   let m = Math.floor((remaining / 1000 / 60) % 60);

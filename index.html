@@ -1592,7 +1592,7 @@ document.getElementById("eventTicker").innerHTML =
 async function loadMaintenance(){
 
 try{
-let res = await fetch("data/maintenance.json");
+let res = await fetch("data/maintenance.json?v=" + Date.now());
 maintenanceData = await res.json();
 }catch(e){
 console.log("Maintenance load error", e);

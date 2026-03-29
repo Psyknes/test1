@@ -985,6 +985,7 @@ height:80px;
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;
 let maintenanceLastSwitch = 0;  
+let currentMaintenanceState = null;  
 
 function getMaintenanceState(){
 
@@ -1108,6 +1109,11 @@ function applyMaintenanceUI(){
 
 let state = getMaintenanceState();
 
+// 🔥 DO NOTHING if state hasn't changed
+if(state === currentMaintenanceState) return;
+
+currentMaintenanceState = state;
+
 let hunter = document.getElementById("taskHunter");
 
 let hideIds = [
@@ -1161,16 +1167,17 @@ if(state === "scheduled"){
   return;
 }
 
-// 🟢 NORMAL
+// 🟢 NORMAL (RESTORE ONLY ONCE)
 if(state === "normal"){
 
-  // restore task hunter
-  initHunterUI();
+  // 🔥 DO NOT call initHunterUI()
+  // Let your existing system render naturally
 
   hideIds.forEach(id=>{
     let el = document.getElementById(id);
     if(el) el.style.display = "";
   });
+
 }
 }
 

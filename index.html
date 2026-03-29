@@ -1214,29 +1214,6 @@ if(state === "normal"){
 }
 }
 
-function updateMaintenanceMessage(){
-
-let msgBox = document.getElementById("maintenanceMessage");
-if(!msgBox || !maintenanceData) return;
-
-let m = maintenanceData.messages;
-
-if(m.mode === "rotate" && m.rotate.length){
-
-  let now = Date.now();
-
-  if(now - maintenanceLastSwitch > m.interval * 1000){
-    maintenanceMessageIndex = (maintenanceMessageIndex + 1) % m.rotate.length;
-    maintenanceLastSwitch = now;
-  }
-
-  msgBox.innerText = m.rotate[maintenanceMessageIndex];
-
-}else{
-  msgBox.innerText = m.static;
-}
-}
-  
 function getLocalDay(hourUTC, dayStr){
 
 if(hourUTC === "ALL" || hourUTC === undefined){

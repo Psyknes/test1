@@ -1510,11 +1510,7 @@ else{
   text = `<span style="color:#ff4d4d;">Ends in ${formatHM(remaining)}</span>`;
 }
 
-timerEl.innerHTML = `
-  <div class="${barClass}">
-    ${text}
-  </div>
-`;
+timerEl.innerHTML = text;
 }
 
 function updateLongEventTicker(){

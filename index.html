@@ -1734,7 +1734,7 @@ if(t.categories && t.categories.includes("Triple")) type = "Triple";
 else if(t.categories && t.categories.includes("Double")) type = "Double";
 else if(t.categories && t.categories.includes("Exclusive")) type = "Exclusive";
 
-console.log("Checking:", t.task, "→", p);  
+// console.log("Checking:", t.task, "→", p);
 
 if(!p) return;
 
@@ -1811,7 +1811,9 @@ function buildTaskMap(){
 }
 
 function classifyTasks(){
-console.log("RAW DATA SAMPLE:", rawData[0]);
+if(rawData.length){
+  console.log("RAW DATA SAMPLE:", rawData[0]);
+}
   let tasks = buildTaskMap();
 
   let triple = [];

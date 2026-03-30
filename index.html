@@ -1390,9 +1390,15 @@ function getActiveShortEvent(){
 
     let cycles = 0;
 
-    if(repeatMs > 0){
-      cycles = Math.floor((now - baseStart) / repeatMs);
-    }
+if(repeatMs > 0){
+  let diff = now - baseStart;
+
+  if(diff > 0){
+    cycles = Math.floor(diff / repeatMs);
+  }else{
+    cycles = 0; // 🔥 prevents backward cycle
+  }
+}
 
     // 🔥 CURRENT cycle
     let alertStart = new Date(baseAlert.getTime() + cycles * repeatMs);

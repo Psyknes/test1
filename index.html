@@ -1663,8 +1663,7 @@ function rotateNext(){
   setTimeout(()=>{
 
     // 🔥 disable transition temporarily (prevents snap-back)
-    leftEl.classList.add("transitioning");
-    centerEl.classList.add("transitioning");
+   centerEl.classList.add("transitioning");
     rightEl.classList.add("transitioning");
 
     currentIndex = (currentIndex + 1) % list.length;

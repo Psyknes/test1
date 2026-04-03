@@ -888,6 +888,62 @@ height:80px;
   opacity: 0.7;
   box-shadow: none;
 }
+
+.shortEventsWrapper{
+  text-align:center;
+  margin-top:10px;
+}
+
+.seName{
+  font-size:14px;
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+.seCarousel{
+  position:relative;
+  height:60px;
+  overflow:hidden;
+}
+
+.seItem{
+  position:absolute;
+  top:0;
+  width:80px;
+  height:60px;
+  left:50%;
+  transform:translateX(-50%) scale(0.7);
+  opacity:0.5;
+  transition:all 0.4s ease;
+}
+
+.seItem img{
+  width:100%;
+  height:auto;
+}
+
+.seItem.active{
+  transform:translateX(-50%) scale(1);
+  opacity:1;
+}
+
+.seItem.left{
+  transform:translateX(-140%) scale(0.7);
+}
+
+.seItem.right{
+  transform:translateX(40%) scale(0.7);
+}
+
+.seTimer{
+  margin-top:6px;
+  font-size:13px;
+}
+
+/* State colors */
+.se-active{ color:#ff6b6b; }
+.se-alert{ color:#4cff88; }
+.se-cooldown{ color:#aaa; }
   
 </style>
 </head>
@@ -937,6 +993,23 @@ height:80px;
 </div>
 
 </div>
+
+</div>
+
+<div class="shortEventsWrapper">
+
+  <!-- Event Name -->
+  <div id="seName" class="seName"></div>
+
+  <!-- Carousel -->
+  <div class="seCarousel" id="seCarousel">
+    <div class="seItem" id="seLeft"></div>
+    <div class="seItem active" id="seCenter"></div>
+    <div class="seItem" id="seRight"></div>
+  </div>
+
+  <!-- Timer -->
+  <div id="seTimer" class="seTimer"></div>
 
 </div>
   
@@ -1449,6 +1522,185 @@ if(repeatMs > 0){
 
   return pool[0];
 }
+
+function getAllShortEventsSorted(){
+
+  let now = new Date();
+
+  let events = shortEvents.map(e => {
+
+    let baseStart = new Date(e.start);
+    let baseEnd = new Date(e.end);
+    let baseAlert = new Date(e.alertStart || e.alert_start);
+
+    let repeatMs = e.repeat * 60 * 60 * 1000;
+
+    let cycles = 0;
+    if(repeatMs > 0){
+      let diff = now - baseStart;
+      if(diff > 0){
+        cycles = Math.floor(diff / repeatMs);
+      }
+    }
+
+    let alertStart = new Date(baseAlert.getTime() + cycles * repeatMs);
+    let start = new Date(baseStart.getTime() + cycles * repeatMs);
+    let end = new Date(baseEnd.getTime() + cycles * repeatMs);
+
+    let nextStart = new Date(start.getTime() + repeatMs);
+
+    let state = "";
+
+    if(now < alertStart){
+      state = "cooldown";
+      start = nextStart;
+    }
+    else if(now < start){
+      state = "alert";
+    }
+    else if(now <= end){
+      state = "active";
+    }
+    else{
+      state = "cooldown";
+      start = nextStart;
+    }
+
+    return {
+      ...e,
+      state,
+      start,
+      end
+    };
+
+  });
+
+  // grouping
+  let activeGroup = events.filter(e => e.state === "active" || e.state === "alert");
+  let cooldownGroup = events.filter(e => e.state === "cooldown");
+
+  activeGroup.sort((a,b)=>a.priority - b.priority);
+  cooldownGroup.sort((a,b)=>a.priority - b.priority);
+
+  return [...activeGroup, ...cooldownGroup];
+}
+
+let currentIndex = 0;
+let lastInteraction = 0;
+
+function renderCarousel(){
+
+  let list = getAllShortEventsSorted();
+  if(list.length === 0) return;
+
+  let center = list[currentIndex];
+  let left = list[(currentIndex - 1 + list.length) % list.length];
+  let right = list[(currentIndex + 1) % list.length];
+
+  // name
+  let nameEl = document.getElementById("seName");
+  nameEl.innerText = center.name;
+  nameEl.style.color = center.color;
+
+  // images
+  setItem("seCenter", center, "active");
+  setItem("seLeft", left, "left");
+  setItem("seRight", right, "right");
+
+  // timer
+  renderTimer(center);
+}
+
+function setItem(id, e, pos){
+  let el = document.getElementById(id);
+  let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
+
+  el.className = "seItem " + pos;
+  el.innerHTML = `<img src="images/events/${imgName}.png">`;
+}
+
+function renderTimer(e){
+
+  let now = new Date();
+  let label = "";
+  let remaining = 0;
+  let ref;
+
+  if(e.state === "cooldown"){
+    label = "Next";
+    remaining = e.start - now;
+    ref = e.start;
+  }
+  else if(e.state === "alert"){
+    label = "Starts in";
+    remaining = e.start - now;
+    ref = e.start;
+  }
+  else{
+    label = "Ends in";
+    remaining = e.end - now;
+    ref = e.end;
+  }
+
+  remaining = Math.max(0, remaining);
+
+  let h = Math.floor(remaining/1000/60/60);
+  let m = Math.floor((remaining/1000/60)%60);
+
+  let time = ref.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+
+  let cls = "seTimer se-" + e.state;
+
+  document.getElementById("seTimer").innerHTML =
+    `<span class="${cls}">${label} ${h}h ${m}m</span> • ${time}`;
+}
+
+let startX = 0;
+
+let carousel = document.getElementById("seCarousel");
+
+carousel.addEventListener("touchstart", e=>{
+  startX = e.touches[0].clientX;
+});
+
+carousel.addEventListener("touchend", e=>{
+  let dx = e.changedTouches[0].clientX - startX;
+
+  if(Math.abs(dx) > 30){
+    if(dx < 0){
+      currentIndex++;
+    }else{
+      currentIndex--;
+    }
+
+    lastInteraction = Date.now();
+    renderCarousel();
+  }
+});
+
+setInterval(()=>{
+
+  let list = getAllShortEventsSorted();
+  if(list.length === 0) return;
+
+  let hasActive = list.some(e => e.state === "active" || e.state === "alert");
+
+  let idle = Date.now() - lastInteraction > 5000;
+
+  if(hasActive){
+    if(idle){
+      currentIndex = 0; // highest priority
+      renderCarousel();
+    }
+    return;
+  }
+
+  if(idle){
+    currentIndex = (currentIndex + 1) % list.length;
+    renderCarousel();
+  }
+
+}, 1000);  
   
 function updateSpecialBar(){
 
@@ -2473,6 +2725,9 @@ setInterval(function(){
     renderSaveList();
     renderCasualTasks();
   }, 60000);
+
+  renderCarousel();
+setInterval(renderCarousel, 1000);
 
 });
   

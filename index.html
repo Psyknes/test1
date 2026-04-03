@@ -1648,7 +1648,7 @@ function rotateNext(){
   let centerEl = document.getElementById("seCenter");
   let rightEl = document.getElementById("seRight");
 
-  // STEP 1: animate positions
+  // STEP 1 — animate forward
   leftEl.classList.remove("left");
   leftEl.classList.add("active");
 
@@ -1656,21 +1656,33 @@ function rotateNext(){
   centerEl.classList.add("right");
 
   rightEl.classList.remove("right");
-rightEl.style.transform = "translate(140%, -50%) scale(0.6)";
-rightEl.style.opacity = "0";
+  rightEl.style.transform = "translate(140%, -50%) scale(0.6)";
+  rightEl.style.opacity = "0";
 
-  // STEP 2: after animation → update real data
+  // STEP 2 — after animation completes
   setTimeout(()=>{
 
-      currentIndex = (currentIndex + 1) % list.length;
-    
-// reset styles
+    // 🔥 disable transition temporarily (prevents snap-back)
+    leftEl.classList.add("transitioning");
+    centerEl.classList.add("transitioning");
+    rightEl.classList.add("transitioning");
+
+    currentIndex = (currentIndex + 1) % list.length;
+
+    // reset styles
     rightEl.style.transform = "";
     rightEl.style.opacity = "";
-    
+
     renderCarousel();
 
-  }, 450); // must match CSS transition time
+    // 🔥 re-enable transitions AFTER layout update
+    setTimeout(()=>{
+      leftEl.classList.remove("transitioning");
+      centerEl.classList.remove("transitioning");
+      rightEl.classList.remove("transitioning");
+    }, 50);
+
+  }, 450);
 }
   
 function setItem(id, e, pos){

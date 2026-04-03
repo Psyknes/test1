@@ -934,20 +934,16 @@ height:80px;
   object-fit:cover;
 }
 
-.seItem.active{
-  transform:translate(-50%, -50%) scale(1.1);
-  opacity:1;
-  z-index:2;
+.seItem.left{
+  transform:translate(-150%, -50%) scale(0.8) rotateY(30deg);
 }
 
-.seItem.left{
-  transform:translate(-140%, -50%) scale(0.8) rotateY(30deg);
-  opacity:0.5;
+.seItem.active{
+  transform:translate(-50%, -50%) scale(1.1);
 }
 
 .seItem.right{
-  transform:translate(40%, -50%) scale(0.8) rotateY(-30deg);
-  opacity:0.5;
+  transform:translate(50%, -50%) scale(0.8) rotateY(-30deg);
 }
 
 .seTimer{
@@ -1661,7 +1657,7 @@ function rotateNext(){
   // 🔥 animate forward
   leftEl.className = "seItem active";
   centerEl.className = "seItem right";
-  rightEl.style.transform = "translate(140%, -50%) scale(0.6)";
+  rightEl.style.transform = "translate(150%, -50%) scale(0.6)";
   rightEl.style.opacity = "0";
 
   setTimeout(()=>{

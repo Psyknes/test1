@@ -1779,10 +1779,7 @@ setInterval(()=>{
   let idle = Date.now() - lastInteraction > AUTO_ROTATE_DELAY;
 
   if(hasActive){
-  if(idle && currentIndex !== 0 && !isRotating){
-    currentIndex = 0;
-    renderCarousel();
-  }
+  // 🔥 DO NOT FORCE RESET DURING AUTO LOOP
   return;
 }
 

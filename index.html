@@ -1656,15 +1656,18 @@ function rotateNext(){
   centerEl.classList.add("right");
 
   rightEl.classList.remove("right");
-  rightEl.classList.add("transitioning");
+rightEl.style.transform = "translate(140%, -50%) scale(0.6)";
+rightEl.style.opacity = "0";
 
   // STEP 2: after animation → update real data
   setTimeout(()=>{
 
       currentIndex = (currentIndex + 1) % list.length;
-
-    rightEl.classList.remove("transitioning");
-
+    
+// reset styles
+    rightEl.style.transform = "";
+    rightEl.style.opacity = "";
+    
     renderCarousel();
 
   }, 450); // must match CSS transition time
@@ -1791,13 +1794,13 @@ carousel.addEventListener("mouseup", e=>{
     if(!list.length) return;
 
     if(dx < 0){
-      currentIndex = (currentIndex + 1) % list.length;
+      rotateNext();   // ✅ forward animated
     }else{
       currentIndex = (currentIndex - 1 + list.length) % list.length;
+      renderCarousel();   // ✅ reverse (no animation yet)
     }
 
     lastInteraction = Date.now();
-    rotateNext();
   }
 });
   

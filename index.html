@@ -1019,46 +1019,55 @@ height:80px;
 /* 🔥 ACTIVE FIRE EFFECT */
 
 .seItem.active .seCircle{
+  position:relative;
+
+  /* base glow */
   box-shadow:
-    0 0 8px rgba(255,80,0,0.6),
-    0 0 16px rgba(255,60,0,0.8),
-    0 0 28px rgba(255,0,0,0.6);
+    0 0 6px rgba(255,80,0,0.4),
+    0 0 14px rgba(255,60,0,0.5);
 
-  animation: firePulse 1.2s ease-in-out infinite;
- animation: growlShake 0.4s infinite;
+  animation: creatureBreath 2.4s ease-in-out infinite;
 }
 
-@keyframes growlShake{
-  0% { transform: translateX(0) scale(1); }
-  25% { transform: translateX(-1px) scale(1.05); }
-  50% { transform: translateX(1px) scale(1.08); }
-  75% { transform: translateX(-1px) scale(1.05); }
-  100% { transform: translateX(0) scale(1); }
-}
 
-/* 🔥 flame flicker overlay */
+
+/* 🔥 soft heat aura */
 .seItem.active .seCircle::after{
   content:"";
   position:absolute;
-  inset:-6px;
+  inset:-8px;
   border-radius:50%;
 
   background: radial-gradient(
     circle,
-    rgba(255,120,0,0.4) 0%,
-    rgba(255,60,0,0.25) 40%,
+    rgba(255,120,0,0.25) 0%,
+    rgba(255,80,0,0.15) 40%,
     transparent 70%
   );
 
-  animation: flameFlicker 1.2s infinite ease-in-out;
+  animation: heatWave 2.4s ease-in-out infinite;
   pointer-events:none;
 }
 
-@keyframes firePulse{
+.seItem.active .seCircle img{
+  animation: microShift 3s ease-in-out infinite;
+}
+
+@keyframes microShift{
+  0%{ transform:translateX(0); }
+  50%{ transform:translateX(1px); }
+  100%{ transform:translateX(0); }
+}  
+  
+/* 🫁 breathing motion */
+@keyframes creatureBreath{
   0%{
     transform:scale(1);
   }
-  50%{
+  40%{
+    transform:scale(1.06);
+  }
+  60%{
     transform:scale(1.08);
   }
   100%{
@@ -1066,6 +1075,22 @@ height:80px;
   }
 }
 
+/* 🌡 heat shimmer */
+@keyframes heatWave{
+  0%{
+    opacity:0.4;
+    transform:scale(1);
+  }
+  50%{
+    opacity:0.8;
+    transform:scale(1.15);
+  }
+  100%{
+    opacity:0.4;
+    transform:scale(1);
+  }
+}
+  
 @keyframes flameFlicker{
   0%{opacity:0.5;}
   50%{opacity:1;}

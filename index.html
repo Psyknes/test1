@@ -1670,10 +1670,24 @@ function rotateNext(){
     currentIndex = (currentIndex + 1) % list.length;
 
     // reset styles
-    rightEl.style.transform = "";
-    rightEl.style.opacity = "";
+    // reset styles
+rightEl.style.transform = "";
+rightEl.style.opacity = "";
 
-    renderCarousel();
+// 🔥 FORCE HARD RESET (prevents reverse animation)
+leftEl.style.transition = "none";
+centerEl.style.transition = "none";
+rightEl.style.transition = "none";
+
+renderCarousel();
+
+// 🔥 FORCE REFLOW (CRITICAL)
+leftEl.offsetHeight;
+
+// 🔥 RESTORE TRANSITIONS
+leftEl.style.transition = "";
+centerEl.style.transition = "";
+rightEl.style.transition = "";
 
     // 🔥 re-enable transitions AFTER layout update
     setTimeout(()=>{

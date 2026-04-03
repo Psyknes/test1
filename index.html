@@ -1024,6 +1024,15 @@ height:80px;
     0 0 28px rgba(255,0,0,0.6);
 
   animation: firePulse 1.2s ease-in-out infinite;
+ animation: growlShake 0.4s infinite;
+}
+
+@keyframes growlShake{
+  0% { transform: translateX(0) scale(1); }
+  25% { transform: translateX(-1px) scale(1.05); }
+  50% { transform: translateX(1px) scale(1.08); }
+  75% { transform: translateX(-1px) scale(1.05); }
+  100% { transform: translateX(0) scale(1); }
 }
 
 /* 🔥 flame flicker overlay */

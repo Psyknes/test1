@@ -258,6 +258,7 @@ color:#6fb6ff;
 }  
 
 .ghoulionCard{
+display:none;
 border-left:6px solid #ff5c5c;
 background:#1b1111;
 padding:8px 10px;  
@@ -904,6 +905,7 @@ height:80px;
   position:relative;
   height:60px;
   overflow:hidden;
+  perspective: 800px;   /* 🔥 THIS CHANGES EVERYTHING */
 }
 
 .seItem{
@@ -914,25 +916,30 @@ height:80px;
   left:50%;
   transform:translateX(-50%) scale(0.7);
   opacity:0.5;
-  transition:all 0.4s ease;
+  transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .seItem img{
   width:100%;
   height:auto;
+  border-radius:50%;   /* 🔥 THIS */
+  object-fit:cover;
 }
 
 .seItem.active{
-  transform:translateX(-50%) scale(1);
+  transform:translateX(-50%) scale(1.05);
   opacity:1;
+  z-index:2;
 }
 
 .seItem.left{
-  transform:translateX(-140%) scale(0.7);
+  transform:translateX(-140%) scale(0.75) rotateY(25deg);
+  opacity:0.4;
 }
 
 .seItem.right{
-  transform:translateX(40%) scale(0.7);
+  transform:translateX(40%) scale(0.75) rotateY(-25deg);
+  opacity:0.4;
 }
 
 .seTimer{
@@ -1659,7 +1666,7 @@ function renderTimer(e){
   let cls = "seTimer se-" + e.state;
 
   document.getElementById("seTimer").innerHTML =
-    `<span class="${cls}">${label} ${h}h ${m}m</span> • ${time}`;
+    `<span class="${cls}">${label} ${h}h ${m.toString().padStart(2,'0')}m</span> • ${time}`;
 }
 
 let startX = 0;
@@ -1712,6 +1719,36 @@ setInterval(()=>{
   }
 
 }, 1000);  
+
+let isDragging = false;
+let mouseStartX = 0;
+
+carousel.addEventListener("mousedown", e=>{
+  isDragging = true;
+  mouseStartX = e.clientX;
+});
+
+carousel.addEventListener("mouseup", e=>{
+  if(!isDragging) return;
+  isDragging = false;
+
+  let dx = e.clientX - mouseStartX;
+
+  if(Math.abs(dx) > 30){
+
+    let list = getAllShortEventsSorted();
+    if(!list.length) return;
+
+    if(dx < 0){
+      currentIndex = (currentIndex + 1) % list.length;
+    }else{
+      currentIndex = (currentIndex - 1 + list.length) % list.length;
+    }
+
+    lastInteraction = Date.now();
+    renderCarousel();
+  }
+});
   
 function updateSpecialBar(){
 

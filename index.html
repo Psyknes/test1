@@ -1688,6 +1688,52 @@ function rotateNext(){
 
   }, 450);
 }
+
+function rotatePrev(){
+
+  if(isRotating) return;
+  isRotating = true;
+
+  let list = currentList;
+  if(!list.length){
+    isRotating = false;
+    return;
+  }
+
+  let leftEl = document.getElementById("seLeft");
+  let centerEl = document.getElementById("seCenter");
+  let rightEl = document.getElementById("seRight");
+
+  // 🔥 animate backward
+  rightEl.className = "seItem active";
+  centerEl.className = "seItem left";
+  leftEl.style.transform = "translate(-150%, -50%) scale(0.6)";
+  leftEl.style.opacity = "0";
+
+  setTimeout(()=>{
+
+    currentIndex = (currentIndex - 1 + list.length) % list.length;
+
+    let center = list[currentIndex];
+    let left = list[(currentIndex - 1 + list.length) % list.length];
+    let right = list[(currentIndex + 1) % list.length];
+
+    setItem("seCenter", center, "active");
+    setItem("seLeft", left, "left");
+    setItem("seRight", right, "right");
+
+    leftEl.style.transform = "";
+    leftEl.style.opacity = "";
+
+    document.getElementById("seName").innerText = center.name;
+    document.getElementById("seName").style.color = center.color;
+
+    renderTimer(center);
+
+    isRotating = false;
+
+  }, 450);
+}
   
 function setItem(id, e, pos){
   let el = document.getElementById(id);
@@ -1753,11 +1799,10 @@ carousel.addEventListener("touchend", e=>{
     if(!list.length) return;
 
     if(dx < 0){
-      rotateNext();
-    }else{
-      currentIndex = (currentIndex - 1 + list.length) % list.length;
-      renderCarousel();   // 👈 reverse (no animation yet)
-    }
+  rotateNext();
+}else{
+  rotatePrev();   // 🔥 USE ANIMATION, NOT SNAP
+}
 
     lastInteraction = Date.now();
   }
@@ -1806,11 +1851,10 @@ carousel.addEventListener("mouseup", e=>{
     if(!list.length) return;
 
     if(dx < 0){
-      rotateNext();   // ✅ forward animated
-    }else{
-      currentIndex = (currentIndex - 1 + list.length) % list.length;
-      renderCarousel();   // ✅ reverse (no animation yet)
-    }
+  rotateNext();
+}else{
+  rotatePrev();   // 🔥 USE ANIMATION, NOT SNAP
+}
 
     lastInteraction = Date.now();
   }

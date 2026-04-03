@@ -888,6 +888,52 @@ height:80px;
   opacity: 0.7;
   box-shadow: none;
 }
+
+/* 🔹 Short Events Row (NEW) */
+
+#shortEventsRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+
+.seItem{
+  flex:1;
+  text-align:center;
+  min-width:60px;
+}
+
+.seName{
+  font-size:11px;
+  font-weight:600;
+  margin-bottom:4px;
+}
+
+.seCircle{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  margin:0 auto 4px;
+  overflow:hidden;
+  border:2px solid rgba(255,255,255,0.15);
+}
+
+.seCircle img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.seTimer{
+  font-size:11px;
+  margin-bottom:2px;
+}
+
+.seTime{
+  font-size:10px;
+  color:#aaa;
+}  
   
 </style>
 </head>
@@ -939,6 +985,10 @@ height:80px;
 </div>
 
 </div>
+
+ <div class="card" id="shortEventsContainer">
+  <div id="shortEventsRow"></div>
+</div> 
   
 <div id="taskHunter" class="card hunterUnified">
 
@@ -2446,6 +2496,7 @@ Promise.all([
   renderCasualTasks();
 
   updateSpecialBar();
+  renderAllShortEvents();
   updateLongEventTicker();
   initHunterUI(); 
   updateTimer();
@@ -2465,6 +2516,7 @@ setInterval(function(){
   // 🔹 UI REFRESH (every 60s)
   setInterval(function(){
     updateSpecialBar();
+    renderAllShortEvents();
     updateTodayPanel();
     
     renderTriple();
@@ -2597,6 +2649,103 @@ function updateTodayPanel(){
   
 updateTodayPanel();
 
+function renderAllShortEvents(){
+
+  let container = document.getElementById("shortEventsRow");
+  if(!container) return;
+
+  let now = new Date();
+
+  let html = shortEvents
+    .filter(e => e.active)
+    .map(e => {
+
+      let baseAlert = new Date(e.alert_start || e.alertStart);
+      let baseStart = new Date(e.start);
+      let baseEnd = new Date(e.end);
+
+      let repeatMs = e.repeat > 0 ? e.repeat * 60 * 60 * 1000 : 0;
+
+      let cycles = 0;
+      let diff = now - baseStart;
+
+      if(repeatMs > 0 && diff > 0){
+        cycles = Math.floor(diff / repeatMs);
+      }
+
+      let alertStart = new Date(baseAlert.getTime() + cycles * repeatMs);
+      let start = new Date(baseStart.getTime() + cycles * repeatMs);
+      let end = new Date(baseEnd.getTime() + cycles * repeatMs);
+
+      let state = "";
+      let label = "";
+      let remaining = 0;
+      let timeRef = start;
+
+      if(now < alertStart){
+        state = "cooldown";
+        label = "Next";
+        remaining = start - now;
+        timeRef = start;
+      }
+      else if(now < start){
+        state = "alert";
+        label = "Starts in";
+        remaining = start - now;
+        timeRef = start;
+      }
+      else if(now <= end){
+        state = "active";
+        label = "Ends in";
+        remaining = end - now;
+        timeRef = end;
+      }
+      else{
+        state = "cooldown";
+        start = new Date(start.getTime() + repeatMs);
+        label = "Next";
+        remaining = start - now;
+        timeRef = start;
+      }
+
+      remaining = Math.max(0, remaining);
+
+      let h = Math.floor(remaining / 1000 / 60 / 60);
+      let m = Math.floor((remaining / 1000 / 60) % 60);
+
+      let localTime = timeRef.toLocaleTimeString([],{
+        hour:'2-digit',
+        minute:'2-digit',
+        hour12:true
+      });
+
+      let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
+
+      return `
+        <div class="seItem">
+          <div class="seName" style="color:${e.color}">
+            ${e.name}
+          </div>
+
+          <div class="seCircle">
+            <img src="images/events/${imgName}.png"
+                 onerror="this.src='images/events/default.png'">
+          </div>
+
+          <div class="seTimer">
+            ${label} ${h}h ${m}m
+          </div>
+
+          <div class="seTime">
+            ${localTime}
+          </div>
+        </div>
+      `;
+
+    }).join("");
+
+  container.innerHTML = html;
+}  
   
 </script>
 

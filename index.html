@@ -1620,6 +1620,7 @@ let lastInteraction = 0;
 
 function renderCarousel(){
 
+    if(isRotating) return;   // 🔥 BLOCK EXTERNAL INTERFERENCE
   currentList = getAllShortEventsSorted();
 let list = currentList;
   if(list.length === 0) return;
@@ -1773,12 +1774,12 @@ setInterval(()=>{
   let idle = Date.now() - lastInteraction > AUTO_ROTATE_DELAY;
 
   if(hasActive){
-    if(idle && currentIndex !== 0){
-      currentIndex = 0;
-      renderCarousel();
-    }
-    return;
+  if(idle && currentIndex !== 0 && !isRotating){
+    currentIndex = 0;
+    renderCarousel();
   }
+  return;
+}
 
   if(idle && !isRotating){
   rotateNext();

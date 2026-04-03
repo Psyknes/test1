@@ -923,6 +923,10 @@ height:80px;
     filter 0.35s ease;
 }
 
+.seItem.transitioning{
+  transition: none !important;
+}  
+
 .seItem img{
   width:100%;
   height:100%;  
@@ -1635,6 +1639,37 @@ function renderCarousel(){
   renderTimer(center);
 }
 
+function rotateNext(){
+
+  let list = getAllShortEventsSorted();
+  if(!list.length) return;
+
+  let leftEl = document.getElementById("seLeft");
+  let centerEl = document.getElementById("seCenter");
+  let rightEl = document.getElementById("seRight");
+
+  // STEP 1: animate positions
+  leftEl.classList.remove("left");
+  leftEl.classList.add("active");
+
+  centerEl.classList.remove("active");
+  centerEl.classList.add("right");
+
+  rightEl.classList.remove("right");
+  rightEl.classList.add("transitioning");
+
+  // STEP 2: after animation → update real data
+  setTimeout(()=>{
+
+    rotateNext();
+
+    rightEl.classList.remove("transitioning");
+
+    renderCarousel();
+
+  }, 450); // must match CSS transition time
+}
+  
 function setItem(id, e, pos){
   let el = document.getElementById(id);
   let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
@@ -1699,13 +1734,13 @@ carousel.addEventListener("touchend", e=>{
     if(!list.length) return;
 
     if(dx < 0){
-      currentIndex = (currentIndex + 1) % list.length;
+      rotateNext();
     }else{
       currentIndex = (currentIndex - 1 + list.length) % list.length;
     }
 
     lastInteraction = Date.now();
-    renderCarousel();
+    rotateNext();
   }
 });
 
@@ -1762,7 +1797,7 @@ carousel.addEventListener("mouseup", e=>{
     }
 
     lastInteraction = Date.now();
-    renderCarousel();
+    rotateNext();
   }
 });
   

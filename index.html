@@ -1614,6 +1614,7 @@ function getAllShortEventsSorted(){
 }
 
 let currentIndex = 0;
+let isRotating = false;
 let lastInteraction = 0;
 
 function renderCarousel(){
@@ -1641,6 +1642,9 @@ function renderCarousel(){
 
 function rotateNext(){
 
+  if(isRotating) return;   // 🔥 PREVENT DOUBLE FIRE
+  isRotating = true;
+  
   let list = getAllShortEventsSorted();
   if(!list.length) return;
 
@@ -1677,6 +1681,7 @@ function rotateNext(){
 
     renderTimer(newCenter);
 
+    isRotating = false;
   }, 450);
 }
   
@@ -1773,11 +1778,10 @@ setInterval(()=>{
     return;
   }
 
-  if(idle){
-    rotateNext();
-    lastInteraction = Date.now();   // 🔥 IMPORTANT (prevents rapid loop)
-    
-  }
+  if(idle && !isRotating){
+  rotateNext();
+  lastInteraction = Date.now();
+}
 
 }, 300);   // 🔥 fast loop, slow rotation 
 

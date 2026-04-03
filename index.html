@@ -923,6 +923,7 @@ height:80px;
   margin:0 auto 4px;
   overflow:hidden;
   border:2px solid rgba(255,255,255,0.15);
+  position:relative;
 }
 
 .seCircle img{
@@ -998,6 +999,67 @@ height:80px;
     font-size:11px;
   }
 
+}
+
+/* ⚪ COOLDOWN */
+
+.seItem.cooldown{
+  opacity:0.85;
+}
+  
+/* 🟢 ALERT STATE */
+
+.seItem.alert .seCircle{
+  box-shadow:
+    0 0 6px rgba(80,255,120,0.6),
+    0 0 14px rgba(80,255,120,0.8);
+}
+  
+/* 🔥 ACTIVE FIRE EFFECT */
+
+.seItem.active .seCircle{
+  box-shadow:
+    0 0 8px rgba(255,80,0,0.6),
+    0 0 16px rgba(255,60,0,0.8),
+    0 0 28px rgba(255,0,0,0.6);
+
+  animation: firePulse 1.2s ease-in-out infinite;
+}
+
+/* 🔥 flame flicker overlay */
+.seItem.active .seCircle::after{
+  content:"";
+  position:absolute;
+  inset:-6px;
+  border-radius:50%;
+
+  background: radial-gradient(
+    circle,
+    rgba(255,120,0,0.4) 0%,
+    rgba(255,60,0,0.25) 40%,
+    transparent 70%
+  );
+
+  animation: flameFlicker 1.2s infinite ease-in-out;
+  pointer-events:none;
+}
+
+@keyframes firePulse{
+  0%{
+    transform:scale(1);
+  }
+  50%{
+    transform:scale(1.08);
+  }
+  100%{
+    transform:scale(1);
+  }
+}
+
+@keyframes flameFlicker{
+  0%{opacity:0.5;}
+  50%{opacity:1;}
+  100%{opacity:0.5;}
 }
   
 </style>
@@ -2787,7 +2849,7 @@ function renderAllShortEvents(){
       let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
 
       return `
-        <div class="seItem">
+        <div class="seItem ${state}">
           <div class="seName" style="color:${e.color}">
             ${e.name}
           </div>

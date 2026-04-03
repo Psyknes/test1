@@ -1641,59 +1641,64 @@ function renderCarousel(){
 
 function rotateNext(){
 
-  let list = getAllShortEventsSorted();
-  if(!list.length) return;
-
   let leftEl = document.getElementById("seLeft");
   let centerEl = document.getElementById("seCenter");
   let rightEl = document.getElementById("seRight");
 
-  // STEP 1 — animate forward
-  leftEl.classList.remove("left");
-  leftEl.classList.add("active");
+  // 🔥 STEP 1 — animate positions
+  leftEl.className = "seItem active";
+  centerEl.className = "seItem right";
 
-  centerEl.classList.remove("active");
-  centerEl.classList.add("right");
-
-  rightEl.classList.remove("right");
   rightEl.style.transform = "translate(140%, -50%) scale(0.6)";
   rightEl.style.opacity = "0";
 
-  // STEP 2 — after animation completes
+  // 🔥 STEP 2 — after animation
   setTimeout(()=>{
 
-    // 🔥 disable transition temporarily (prevents snap-back)
-   centerEl.classList.add("transitioning");
-    rightEl.classList.add("transitioning");
+    let list = getAllShortEventsSorted();
+    if(!list.length) return;
 
+    // move index
     currentIndex = (currentIndex + 1) % list.length;
 
-    // reset styles
-    // reset styles
-rightEl.style.transform = "";
-rightEl.style.opacity = "";
+    // 🔥 ROTATE ELEMENT REFERENCES (NOT DATA)
+    let temp = leftEl;
 
-// 🔥 FORCE HARD RESET (prevents reverse animation)
-leftEl.style.transition = "none";
-centerEl.style.transition = "none";
-rightEl.style.transition = "none";
+    leftEl = centerEl;
+    centerEl = rightEl;
+    rightEl = temp;
 
-renderCarousel();
+    // 🔥 UPDATE IDs (CRITICAL)
+    leftEl.id = "seLeft";
+    centerEl.id = "seCenter";
+    rightEl.id = "seRight";
 
-// 🔥 FORCE REFLOW (CRITICAL)
-leftEl.offsetHeight;
+    // 🔥 RESET RIGHT (the recycled one)
+    rightEl.style.transition = "none";
+    rightEl.style.transform = "translate(-140%, -50%) scale(0.8)";
+    rightEl.style.opacity = "0.5";
 
-// 🔥 RESTORE TRANSITIONS
-leftEl.style.transition = "";
-centerEl.style.transition = "";
-rightEl.style.transition = "";
+    // 🔥 UPDATE ONLY CONTENT (NOT POSITIONS)
+    let nextItem = list[(currentIndex + 1) % list.length];
+    setItem("seRight", nextItem, "right");
 
-    // 🔥 re-enable transitions AFTER layout update
-    setTimeout(()=>{
-      leftEl.classList.remove("transitioning");
-      centerEl.classList.remove("transitioning");
-      rightEl.classList.remove("transitioning");
-    }, 50);
+    // 🔥 FORCE REFLOW
+    rightEl.offsetHeight;
+
+    // 🔥 RESTORE TRANSITION
+    rightEl.style.transition = "";
+
+    // 🔥 FIX CLASSES
+    leftEl.className = "seItem left";
+    centerEl.className = "seItem active";
+    rightEl.className = "seItem right";
+
+    // 🔥 UPDATE NAME + TIMER ONLY
+    let center = list[currentIndex];
+    document.getElementById("seName").innerText = center.name;
+    document.getElementById("seName").style.color = center.color;
+
+    renderTimer(center);
 
   }, 450);
 }

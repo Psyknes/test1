@@ -903,43 +903,47 @@ height:80px;
 
 .seCarousel{
   position:relative;
-  height:60px;
+  height:90px;
   overflow:hidden;
-  perspective: 800px;   /* 🔥 THIS CHANGES EVERYTHING */
+  perspective: 900px;   /* 🔥 THIS CHANGES EVERYTHING */
+  transform-style: preserve-3d;
 }
 
 .seItem{
   position:absolute;
-  top:0;
-  width:80px;
-  height:60px;
+  top:50%;                         /* ✅ vertical center */
   left:50%;
-  transform:translateX(-50%) scale(0.7);
+  width:70px;                      /* slightly smaller = no clipping */
+  height:70px;
+  transform:translate(-50%, -50%) scale(0.7);   /* ✅ center anchor */
   opacity:0.5;
-  transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.35s ease,
+    filter 0.35s ease;
 }
 
 .seItem img{
   width:100%;
-  height:auto;
+  height:100%;  
   border-radius:50%;   /* 🔥 THIS */
   object-fit:cover;
 }
 
 .seItem.active{
-  transform:translateX(-50%) scale(1.05);
+  transform:translate(-50%, -50%) scale(1.1);
   opacity:1;
   z-index:2;
 }
 
 .seItem.left{
-  transform:translateX(-140%) scale(0.75) rotateY(25deg);
-  opacity:0.4;
+  transform:translate(-140%, -50%) scale(0.8) rotateY(30deg);
+  opacity:0.5;
 }
 
 .seItem.right{
-  transform:translateX(40%) scale(0.75) rotateY(-25deg);
-  opacity:0.4;
+  transform:translate(40%, -50%) scale(0.8) rotateY(-30deg);
+  opacity:0.5;
 }
 
 .seTimer{
@@ -954,6 +958,15 @@ height:80px;
 
 .seItem{
   will-change: transform;
+}
+
+.seItem.left img,
+.seItem.right img{
+  filter: blur(1px);
+}
+
+.seItem.active img{
+  filter: none;
 }
   
 </style>
@@ -1696,29 +1709,32 @@ carousel.addEventListener("touchend", e=>{
   }
 });
 
+const AUTO_ROTATE_DELAY = 3500;   // 🔥 3.5 sec (tweakable)
+
 setInterval(()=>{
 
   let list = getAllShortEventsSorted();
-  if(list.length === 0) return;
+  if(!list.length) return;
 
   let hasActive = list.some(e => e.state === "active" || e.state === "alert");
 
-  let idle = Date.now() - lastInteraction > 5000;
+  let idle = Date.now() - lastInteraction > AUTO_ROTATE_DELAY;
 
   if(hasActive){
-  if(idle && currentIndex !== 0){
-    currentIndex = 0;
-    renderCarousel();
+    if(idle && currentIndex !== 0){
+      currentIndex = 0;
+      renderCarousel();
+    }
+    return;
   }
-  return;
-}
 
   if(idle){
     currentIndex = (currentIndex + 1) % list.length;
+    lastInteraction = Date.now();   // 🔥 IMPORTANT (prevents rapid loop)
     renderCarousel();
   }
 
-}, 1000);  
+}, 300);   // 🔥 fast loop, slow rotation 
 
 let isDragging = false;
 let mouseStartX = 0;

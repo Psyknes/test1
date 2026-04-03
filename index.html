@@ -893,21 +893,26 @@ height:80px;
 
 #shortEventsRow{
   display:flex;
-  justify-content:space-between;
+  justify-content:center;   /* 🔥 key change */
   align-items:center;
-  gap:8px;
+  gap:12px;
+  flex-wrap:nowrap;
 }
 
 .seItem{
-  flex:1;
   text-align:center;
-  min-width:60px;
+  flex:0 0 auto;
+  width:72px;   /* 🔥 slightly smaller for mobile fit */
 }
 
 .seName{
   font-size:11px;
   font-weight:600;
   margin-bottom:4px;
+
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 .seCircle{
@@ -934,6 +939,65 @@ height:80px;
   font-size:10px;
   color:#aaa;
 }  
+
+@media (max-width: 600px){
+
+  #shortEventsRow{
+    gap:8px;   /* tighter spacing */
+  }
+
+  .seItem{
+    width:65px;
+  }
+
+  .seCircle{
+    width:42px;
+    height:42px;
+  }
+
+  .seName{
+    font-size:10px;
+  }
+
+  .seTimer{
+    font-size:10px;
+  }
+
+  .seTime{
+    font-size:9px;
+  }
+
+}  
+
+@media (min-width: 601px){
+
+  #shortEventsRow{
+    justify-content:center;
+    gap:18px;
+  }
+
+  .seItem{
+    width:95px;
+  }
+
+  .seCircle{
+    width:58px;
+    height:58px;
+  }
+
+  .seName{
+    font-size:12px;
+  }
+
+  .seTimer{
+    font-size:12px;
+  }
+
+  .seTime{
+    font-size:11px;
+  }
+
+}
   
 </style>
 </head>

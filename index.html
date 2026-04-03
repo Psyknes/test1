@@ -1645,17 +1645,20 @@ let list = currentList;
 
 function rotateNext(){
 
-  if(isRotating) return;   // 🔥 PREVENT DOUBLE FIRE
+  if(isRotating) return;
   isRotating = true;
-  
+
   let list = currentList;
-  if(!list.length) return;
+  if(!list.length){
+    isRotating = false;
+    return;
+  }
 
   let leftEl = document.getElementById("seLeft");
   let centerEl = document.getElementById("seCenter");
   let rightEl = document.getElementById("seRight");
 
-  // 🔥 animate
+  // 🔥 animate forward
   leftEl.className = "seItem active";
   centerEl.className = "seItem right";
   rightEl.style.transform = "translate(140%, -50%) scale(0.6)";
@@ -1663,23 +1666,30 @@ function rotateNext(){
 
   setTimeout(()=>{
 
+    // ✅ update index
     currentIndex = (currentIndex + 1) % list.length;
 
-    // ONLY update the NEW incoming right item
-let newRight = list[(currentIndex + 1) % list.length];
-setItem("seRight", newRight, "right");
+    // ✅ FULL consistent update (important)
+    let center = list[currentIndex];
+    let left = list[(currentIndex - 1 + list.length) % list.length];
+    let right = list[(currentIndex + 1) % list.length];
 
-    // 🔥 RESET styles
+    setItem("seCenter", center, "active");
+    setItem("seLeft", left, "left");
+    setItem("seRight", right, "right");
+
+    // ✅ reset styles
     rightEl.style.transform = "";
     rightEl.style.opacity = "";
 
-    // 🔥 name + timer
-    document.getElementById("seName").innerText = newCenter.name;
-    document.getElementById("seName").style.color = newCenter.color;
+    // ✅ update text
+    document.getElementById("seName").innerText = center.name;
+    document.getElementById("seName").style.color = center.color;
 
-    renderTimer(newCenter);
+    renderTimer(center);
 
     isRotating = false;
+
   }, 450);
 }
   
@@ -1743,7 +1753,7 @@ carousel.addEventListener("touchend", e=>{
 
   if(Math.abs(dx) > 30){
 
-    let list = getAllShortEventsSorted();
+    let list = currentList;
     if(!list.length) return;
 
     if(dx < 0){
@@ -1799,7 +1809,7 @@ carousel.addEventListener("mouseup", e=>{
 
   if(Math.abs(dx) > 30){
 
-    let list = getAllShortEventsSorted();
+    let list = currentList;
     if(!list.length) return;
 
     if(dx < 0){

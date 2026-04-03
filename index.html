@@ -1665,14 +1665,9 @@ function rotateNext(){
 
     currentIndex = (currentIndex + 1) % list.length;
 
-    let newCenter = list[currentIndex];
-    let newLeft = list[(currentIndex - 1 + list.length) % list.length];
-    let newRight = list[(currentIndex + 1) % list.length];
-
-    // 🔥 JUST UPDATE CONTENT
-    setItem("seCenter", newCenter, "active");
-    setItem("seLeft", newLeft, "left");
-    setItem("seRight", newRight, "right");
+    // ONLY update the NEW incoming right item
+let newRight = list[(currentIndex + 1) % list.length];
+setItem("seRight", newRight, "right");
 
     // 🔥 RESET styles
     rightEl.style.transform = "";

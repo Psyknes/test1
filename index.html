@@ -2819,11 +2819,7 @@ function renderAllShortEvents(){
       let remaining = 0;
       let timeRef = start;
 
-      let timerColor = "#aaa";  // default cooldown
-
-if(state === "alert") timerColor = "#4cff88";   // green
-if(state === "active") timerColor = "#ff6b6b";  // red
-
+      
       if(now < alertStart){
         state = "cooldown";
         label = "Next";
@@ -2850,6 +2846,11 @@ if(state === "active") timerColor = "#ff6b6b";  // red
         timeRef = start;
       }
 
+let timerColor = "#aaa";  // default cooldown
+
+if(state === "alert") timerColor = "#4cff88";   // green
+if(state === "active") timerColor = "#ff6b6b";  // red
+      
       remaining = Math.max(0, remaining);
 
       let h = Math.floor(remaining / 1000 / 60 / 60);

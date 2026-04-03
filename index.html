@@ -944,6 +944,10 @@ height:80px;
 .se-active{ color:#ff6b6b; }
 .se-alert{ color:#4cff88; }
 .se-cooldown{ color:#aaa; }
+
+.seItem{
+  will-change: transform;
+}
   
 </style>
 </head>
@@ -1616,7 +1620,10 @@ function setItem(id, e, pos){
   let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
 
   el.className = "seItem " + pos;
-  el.innerHTML = `<img src="images/events/${imgName}.png">`;
+  el.innerHTML = `
+  <img src="images/events/${imgName}.png"
+       onerror="this.src='images/events/default.png'">
+`;
 }
 
 function renderTimer(e){
@@ -1667,10 +1674,14 @@ carousel.addEventListener("touchend", e=>{
   let dx = e.changedTouches[0].clientX - startX;
 
   if(Math.abs(dx) > 30){
+
+    let list = getAllShortEventsSorted(); // ✅ ADD THIS
+    if(!list.length) return;
+
     if(dx < 0){
-      currentIndex++;
+      currentIndex = (currentIndex + 1) % list.length;
     }else{
-      currentIndex--;
+      currentIndex = (currentIndex - 1 + list.length) % list.length;
     }
 
     lastInteraction = Date.now();
@@ -1688,12 +1699,12 @@ setInterval(()=>{
   let idle = Date.now() - lastInteraction > 5000;
 
   if(hasActive){
-    if(idle){
-      currentIndex = 0; // highest priority
-      renderCarousel();
-    }
-    return;
+  if(idle && currentIndex !== 0){
+    currentIndex = 0;
+    renderCarousel();
   }
+  return;
+}
 
   if(idle){
     currentIndex = (currentIndex + 1) % list.length;
@@ -2727,7 +2738,6 @@ setInterval(function(){
   }, 60000);
 
   renderCarousel();
-setInterval(renderCarousel, 1000);
 
 });
   

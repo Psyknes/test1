@@ -1661,7 +1661,7 @@ function rotateNext(){
   // STEP 2: after animation → update real data
   setTimeout(()=>{
 
-    rotateNext();
+      currentIndex = (currentIndex + 1) % list.length;
 
     rightEl.classList.remove("transitioning");
 
@@ -1730,17 +1730,17 @@ carousel.addEventListener("touchend", e=>{
 
   if(Math.abs(dx) > 30){
 
-    let list = getAllShortEventsSorted(); // ✅ ADD THIS
+    let list = getAllShortEventsSorted();
     if(!list.length) return;
 
     if(dx < 0){
       rotateNext();
     }else{
       currentIndex = (currentIndex - 1 + list.length) % list.length;
+      renderCarousel();   // 👈 reverse (no animation yet)
     }
 
     lastInteraction = Date.now();
-    rotateNext();
   }
 });
 
@@ -1764,9 +1764,9 @@ setInterval(()=>{
   }
 
   if(idle){
-    currentIndex = (currentIndex + 1) % list.length;
+    rotateNext();
     lastInteraction = Date.now();   // 🔥 IMPORTANT (prevents rapid loop)
-    renderCarousel();
+    
   }
 
 }, 300);   // 🔥 fast loop, slow rotation 

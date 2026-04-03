@@ -1614,12 +1614,14 @@ function getAllShortEventsSorted(){
 }
 
 let currentIndex = 0;
+let currentList = [];
 let isRotating = false;
 let lastInteraction = 0;
 
 function renderCarousel(){
 
-  let list = getAllShortEventsSorted();
+  currentList = getAllShortEventsSorted();
+let list = currentList;
   if(list.length === 0) return;
 
   let center = list[currentIndex];
@@ -1645,7 +1647,7 @@ function rotateNext(){
   if(isRotating) return;   // 🔥 PREVENT DOUBLE FIRE
   isRotating = true;
   
-  let list = getAllShortEventsSorted();
+  let list = currentList;
   if(!list.length) return;
 
   let leftEl = document.getElementById("seLeft");
@@ -1763,7 +1765,7 @@ const AUTO_ROTATE_DELAY = 3500;   // 🔥 3.5 sec (tweakable)
 
 setInterval(()=>{
 
-  let list = getAllShortEventsSorted();
+  let list = currentList;
   if(!list.length) return;
 
   let hasActive = list.some(e => e.state === "active" || e.state === "alert");

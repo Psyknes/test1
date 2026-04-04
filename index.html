@@ -3124,7 +3124,7 @@ function renderAllShortEvents(){
       }
 
       let extraClass = "";
-if(e.name === "Terror Purge" && state === "active"){
+if(e.name.toLowerCase().includes("terror") && state === "active"){
   extraClass = "terrorActive";
 }
 let timerColor = "#aaa";  // default cooldown

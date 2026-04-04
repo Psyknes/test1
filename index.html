@@ -1097,28 +1097,21 @@ height:80px;
   100%{opacity:0.5;}
 }
 
-#floatingRoot{
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:2147483647;
-}
   
 /* 🔹 Floating Support Widget */
 
 #supportWidget{
-  position:absolute;
+  position:fixed;   /* 🔥 KEY CHANGE */
   bottom:20px;
   right:16px;
 
-  z-index:2147483647;  /* 🔥 max possible */
-
-  transform: translateZ(0);   /* 🔥 force own layer */
-  will-change: transform;
+  z-index:2147483647;
 
   pointer-events:auto;
-}
 
+  transform: none !important;   /* 🔥 force reset */
+}
+  
 #supportPanel{
   position:absolute;
   bottom:45px;   /* 🔥 ensures it opens ABOVE button */
@@ -1137,9 +1130,7 @@ height:80px;
   display:none;
 }  
 
- body{
-  transform:none !important;
-} 
+ 
   
 /* 🔥 3D Button */
 #supportBtn{

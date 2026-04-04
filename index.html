@@ -1103,8 +1103,12 @@ height:80px;
   position:fixed;
   bottom:20px;
   right:16px;
-  z-index:9999;
-  font-family:inherit;
+
+  z-index:2147483647;  /* 🔥 max possible */
+
+  transform: translateZ(0);   /* 🔥 force own layer */
+  will-change: transform;
+
   pointer-events:auto;
 }
 
@@ -1125,6 +1129,10 @@ height:80px;
 
   display:none;
 }  
+
+ body{
+  transform:none !important;
+} 
   
 /* 🔥 3D Button */
 #supportBtn{

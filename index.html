@@ -1052,6 +1052,7 @@ height:80px;
 /* 🦇 TEMP TEST — Terror bats */
 /* 🦇 Terror bats FIXED */
 /* 🦇 Terror bats — CLEAN VERSION */
+/* 🦇 Terror bats FIXED */
 .seItem:nth-child(4) .seCircle::before{
   content:"";
   position:absolute;
@@ -1065,10 +1066,10 @@ height:80px;
 
   pointer-events:none;
 
-  /* 🔥 KEY FIX — REMOVE LIGHT BACKGROUND */
-  filter: brightness(0) contrast(2);
+  /* 🔥 removes white dominance */
+  mix-blend-mode:multiply;
 
-  opacity:0.9;
+  opacity:0.75;
 
   z-index:3;
 

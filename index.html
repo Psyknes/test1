@@ -1096,7 +1096,100 @@ height:80px;
   50%{opacity:1;}
   100%{opacity:0.5;}
 }
-  
+
+/* 🔹 Floating Support Widget */
+
+#supportWidget{
+  position:fixed;
+  bottom:20px;
+  right:16px;
+  z-index:9999;
+  font-family:inherit;
+}
+
+/* 🔥 3D Button */
+#supportBtn{
+  background:linear-gradient(145deg,#2a2a2a,#1a1a1a);
+  color:#fff;
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:13px;
+  cursor:pointer;
+  animation:supportPulse 4s infinite;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+
+  transition:all 0.2s ease;
+}
+
+@keyframes supportPulse{
+  0%,100%{ box-shadow:0 4px 10px rgba(0,0,0,0.6); }
+  50%{ box-shadow:0 4px 14px rgba(255,215,0,0.4); }
+}  
+
+#supportBtn:hover{
+  transform:translateY(-2px);
+}
+
+/* 🔹 Panel */
+#supportPanel{
+  margin-top:10px;
+  width:180px;
+  background:#111;
+  border-radius:10px;
+  padding:10px;
+  text-align:center;
+
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 6px 20px rgba(0,0,0,0.6);
+
+  display:none;
+}
+
+/* Title */
+.supportTitle{
+  font-size:12px;
+  color:#bbb;
+  margin-bottom:8px;
+}
+
+/* ID */
+.supportId{
+  font-size:14px;
+  font-weight:600;
+  color:#4cff88;
+  margin-bottom:8px;
+  letter-spacing:1px;
+}
+
+/* Button */
+#copyBtn{
+  width:100%;
+  padding:6px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+
+  background:#222;
+  color:#fff;
+
+  transition:0.2s;
+}
+
+#copyBtn:hover{
+  background:#333;
+}
+
+/* Copy message */
+#copyMsg{
+  margin-top:6px;
+  font-size:11px;
+  color:#4cff88;
+  display:none;
+}
+ 
 </style>
 </head>
 
@@ -2914,6 +3007,27 @@ if(state === "active") timerColor = "#ff6b6b";  // red
 
   container.innerHTML = html;
 }  
+
+// 🔹 Toggle panel
+document.getElementById("supportBtn").onclick = function(){
+  let panel = document.getElementById("supportPanel");
+  panel.style.display = (panel.style.display === "block") ? "none" : "block";
+};
+
+// 🔹 Copy ID
+document.getElementById("copyBtn").onclick = function(){
+
+  let text = document.getElementById("gameIdText").innerText;
+
+  navigator.clipboard.writeText(text);
+
+  let msg = document.getElementById("copyMsg");
+  msg.style.display = "block";
+
+  setTimeout(()=>{
+    msg.style.display = "none";
+  },1500);
+};
   
 </script>
 
@@ -2928,6 +3042,26 @@ if(state === "active") timerColor = "#ff6b6b";  // red
   <div id="maintenanceMessage" style="font-size:14px; color:#aaa; margin-bottom:10px;"></div>
 
   <div id="maintenanceTimer" style="font-size:13px; color:#ccc;"></div>
+
+</div> 
+
+ <div id="supportWidget">
+
+  <!-- Floating Button -->
+  <div id="supportBtn">Support Me</div>
+
+  <!-- Expand Panel -->
+  <div id="supportPanel">
+    <div class="supportTitle">Gift me a game pack 🎁</div>
+
+    <div class="supportId" id="gameIdText">
+      20700149
+    </div>
+
+    <button id="copyBtn">Copy ID</button>
+
+    <div id="copyMsg">Copied!</div>
+  </div>
 
 </div> 
   

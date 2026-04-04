@@ -1251,6 +1251,71 @@ height:80px;
 
   93%{ opacity:0; }
 }
+
+/* 🌊 Reservoir Raid — glass ripple */
+.seItem.rrActive .seCircle{
+  position:relative;
+  overflow:hidden;
+}
+
+.seItem.rrActive .seCircle::before{
+  content:"";
+  position:absolute;
+
+  inset:-20%;
+
+  background:url("images/effects/rr.gif") center/cover no-repeat;
+
+  pointer-events:none;
+  z-index:2;
+
+  /* 🔥 KEY: very subtle */
+  opacity:0.25;
+
+  /* glass feel */
+  mix-blend-mode:overlay;
+
+  animation: rrRipple 8s linear infinite;
+}
+
+@keyframes rrRipple{
+  0%{
+    transform: scale(1) translateY(0);
+  }
+
+  50%{
+    transform: scale(1.05) translateY(-2%);
+  }
+
+  100%{
+    transform: scale(1) translateY(0);
+  }
+}
+
+.seItem.rrActive .seCircle::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+
+  background:radial-gradient(
+    circle at 30% 30%,
+    rgba(255,255,255,0.25),
+    transparent 60%
+  );
+
+  opacity:0.4;
+
+  pointer-events:none;
+  z-index:3;
+
+  animation: rrShimmer 6s ease-in-out infinite;
+}
+
+@keyframes rrShimmer{
+  0%,100%{ opacity:0.2; }
+  50%{ opacity:0.5; }
+}
   
 @keyframes microShift{
   0%{ transform:translateX(0); }
@@ -3332,6 +3397,9 @@ if(e.name.toLowerCase().includes("ghoulion") && state === "active"){
 if(e.name.toLowerCase().includes("arcadian") && state === "active"){
   extraClass = "arcadianActive";
 }      
+if(e.name.toLowerCase().includes("reservoir") && state === "active"){
+  extraClass = "rrActive";
+}
       
 let timerColor = "#aaa";  // default cooldown
 

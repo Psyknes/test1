@@ -3087,6 +3087,10 @@ function renderAllShortEvents(){
         timeRef = start;
       }
 
+      let extraClass = "";
+if(e.name === "Terror Purge" && state === "active"){
+  extraClass = "terrorActive";
+}
 let timerColor = "#aaa";  // default cooldown
 
 if(state === "alert") timerColor = "#4cff88";   // green
@@ -3106,7 +3110,7 @@ if(state === "active") timerColor = "#ff6b6b";  // red
       let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
 
       return `
-        <div class="seItem ${state}">
+        <div class="seItem ${state} ${extraClass}">
           <div class="seName" style="color:${e.color}">
             ${e.name}
           </div>

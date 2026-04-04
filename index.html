@@ -1049,6 +1049,20 @@ height:80px;
   pointer-events:none;
 }
 
+/* 🦇 TEMP TEST — Terror bats */
+.seItem:nth-child(4) .seCircle::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+
+  background:url("images/effects/bats.gif") center/cover no-repeat;
+
+  pointer-events:none;
+  opacity:0.9;
+  z-index:3;
+}
+  
 .seItem.active .seCircle img{
   animation: microShift 3s ease-in-out infinite;
 }

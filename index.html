@@ -1050,23 +1050,51 @@ height:80px;
 }
 
 /* 🦇 TEMP TEST — Terror bats */
+/* 🦇 Terror bats FIXED */
 .seItem:nth-child(4) .seCircle::before{
   content:"";
   position:absolute;
-  inset:0;
-  border-radius:50%;
 
-  background:url("images/effects/bats.gif") center/cover no-repeat;
+  top:-30%;
+  left:-30%;
+  width:160%;
+  height:160%;
+
+  background:url("images/effects/bats.gif") center/contain no-repeat;
 
   pointer-events:none;
-  opacity:0.004;
+
+  /* 🔥 removes white dominance */
+  mix-blend-mode:multiply;
+
+  opacity:0.75;
+
   z-index:3;
+
+  animation:batBurst 1.2s ease-out;
 }
   
 .seItem.active .seCircle img{
   animation: microShift 3s ease-in-out infinite;
 }
 
+@keyframes batBurst{
+  0%{
+    transform:scale(0.6);
+    opacity:0;
+  }
+
+  40%{
+    transform:scale(1.2);
+    opacity:1;
+  }
+
+  100%{
+    transform:scale(1);
+    opacity:0.75;
+  }
+}
+  
 @keyframes microShift{
   0%{ transform:translateX(0); }
   50%{ transform:translateX(1px); }

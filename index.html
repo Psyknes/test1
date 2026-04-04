@@ -1311,7 +1311,49 @@ height:80px;
   color:#4cff88;
   display:none;
 }
- 
+
+/* 🔥 Terror bats overlay */
+.seItem.terrorActive .seCircle{
+  position:relative;
+  overflow:visible;
+}
+
+/* 🦇 Bats layer */
+.seItem.terrorActive .seCircle::after{
+  content:"";
+  position:absolute;
+
+  /* slightly bigger than icon */
+  top:-20%;
+  left:-20%;
+  width:140%;
+  height:140%;
+
+  background:url("images/effects/bats.gif") center/cover no-repeat;
+
+  pointer-events:none;
+
+  /* 🔥 blend so icon still visible */
+  mix-blend-mode:screen;
+
+  opacity:0.85;
+
+  /* smooth entry */
+  animation:batFade 1s ease;
+}
+
+/* soft appearance */
+@keyframes batFade{
+  from{
+    opacity:0;
+    transform:scale(0.9);
+  }
+  to{
+    opacity:0.85;
+    transform:scale(1);
+  }
+}
+  
 </style>
 </head>
 

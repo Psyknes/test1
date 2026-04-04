@@ -1105,8 +1105,27 @@ height:80px;
   right:16px;
   z-index:9999;
   font-family:inherit;
+  pointer-events:auto;
 }
 
+#supportPanel{
+  position:absolute;
+  bottom:45px;   /* 🔥 ensures it opens ABOVE button */
+  right:0;
+
+  margin-top:0;
+  width:180px;
+  background:#111;
+  border-radius:10px;
+  padding:10px;
+  text-align:center;
+
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 6px 20px rgba(0,0,0,0.6);
+
+  display:none;
+}  
+  
 /* 🔥 3D Button */
 #supportBtn{
   background:linear-gradient(145deg,#2a2a2a,#1a1a1a);
@@ -1115,7 +1134,10 @@ height:80px;
   border-radius:10px;
   font-size:13px;
   cursor:pointer;
-  animation:supportPulse 4s infinite;
+
+  user-select:none;          /* 🔥 prevents text selection */
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color: transparent;
 
   box-shadow:
     0 4px 10px rgba(0,0,0,0.6),
@@ -1134,19 +1156,7 @@ height:80px;
 }
 
 /* 🔹 Panel */
-#supportPanel{
-  margin-top:10px;
-  width:180px;
-  background:#111;
-  border-radius:10px;
-  padding:10px;
-  text-align:center;
 
-  border:1px solid rgba(255,255,255,0.08);
-  box-shadow:0 6px 20px rgba(0,0,0,0.6);
-
-  display:none;
-}
 
 /* Title */
 .supportTitle{
@@ -3009,25 +3019,41 @@ if(state === "active") timerColor = "#ff6b6b";  // red
 }  
 
 // 🔹 Toggle panel
-document.getElementById("supportBtn").onclick = function(){
-  let panel = document.getElementById("supportPanel");
-  panel.style.display = (panel.style.display === "block") ? "none" : "block";
-};
+document.addEventListener("DOMContentLoaded", function(){
 
-// 🔹 Copy ID
-document.getElementById("copyBtn").onclick = function(){
+  const btn = document.getElementById("supportBtn");
+  const panel = document.getElementById("supportPanel");
+  const copyBtn = document.getElementById("copyBtn");
+  const msg = document.getElementById("copyMsg");
+  const idText = document.getElementById("gameIdText");
 
-  let text = document.getElementById("gameIdText").innerText;
+  if(!btn || !panel) return;
 
-  navigator.clipboard.writeText(text);
+  // toggle panel
+  btn.addEventListener("click", function(e){
+    e.stopPropagation();
+    panel.style.display = (panel.style.display === "block") ? "none" : "block";
+  });
 
-  let msg = document.getElementById("copyMsg");
-  msg.style.display = "block";
+  // copy ID
+  copyBtn.addEventListener("click", function(e){
+    e.stopPropagation();
 
-  setTimeout(()=>{
-    msg.style.display = "none";
-  },1500);
-};
+    navigator.clipboard.writeText(idText.innerText);
+
+    msg.style.display = "block";
+
+    setTimeout(()=>{
+      msg.style.display = "none";
+    },1500);
+  });
+
+  // close when clicking outside
+  document.addEventListener("click", function(){
+    panel.style.display = "none";
+  });
+
+});
   
 </script>
 

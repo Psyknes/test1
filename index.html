@@ -1062,6 +1062,8 @@ height:80px;
   width:160%;
   height:160%;
 
+  transform-origin:center;
+
   background:url("images/effects/bats.gif") center/contain no-repeat;
 
   pointer-events:none;
@@ -1073,7 +1075,7 @@ height:80px;
 
   z-index:3;
 
-  animation:batBurst 1.2s ease-out;
+  animation: batBurst 1.2s cubic-bezier(.2,.8,.2,1);
 }
   
 .seItem.active .seCircle img{
@@ -1082,18 +1084,23 @@ height:80px;
 
 @keyframes batBurst{
   0%{
-    transform:scale(0.6);
+    transform: scale(0.4) translateY(10%);
     opacity:0;
   }
 
-  40%{
-    transform:scale(1.4);
+  30%{
+    transform: scale(1.3) translateY(-5%);
     opacity:1;
   }
 
+  60%{
+    transform: scale(1.1) translateY(0%);
+    opacity:0.9;
+  }
+
   100%{
-    transform:scale(1);
-    opacity:0.75;
+    transform: scale(1) translateY(0%);
+    opacity:0.85;
   }
 }
   

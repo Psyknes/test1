@@ -1100,16 +1100,18 @@ height:80px;
   
 /* 🔹 Floating Support Widget */
 
+#globalFloatingRoot{
+  position:fixed;
+  inset:0;
+  z-index:2147483647;
+  pointer-events:none;
+}
+
 #supportWidget{
-  position:fixed;   /* 🔥 KEY CHANGE */
+  position:absolute;
   bottom:20px;
   right:16px;
-
-  z-index:2147483647;
-
   pointer-events:auto;
-
-  transform: none !important;   /* 🔥 force reset */
 }
   
 #supportPanel{
@@ -1210,7 +1212,8 @@ height:80px;
 </head>
 
 <body>
-
+<div id="globalFloatingRoot"></div>
+  
 <div class="appContainer"> 
 
 <div id="ticker">
@@ -3060,6 +3063,54 @@ document.addEventListener("DOMContentLoaded", function(){
   });
 
 });
+
+ document.addEventListener("DOMContentLoaded", function(){
+
+  const root = document.getElementById("globalFloatingRoot");
+
+  root.innerHTML = `
+    <div id="supportWidget">
+
+      <div id="supportBtn">Support Me</div>
+
+      <div id="supportPanel">
+        <div class="supportTitle">Gift me a game pack 🎁</div>
+
+        <div class="supportId" id="gameIdText">
+          20700149
+        </div>
+
+        <button id="copyBtn">Copy ID</button>
+
+        <div id="copyMsg">Copied!</div>
+      </div>
+
+    </div>
+  `;
+
+  const btn = document.getElementById("supportBtn");
+  const panel = document.getElementById("supportPanel");
+  const copyBtn = document.getElementById("copyBtn");
+  const msg = document.getElementById("copyMsg");
+  const idText = document.getElementById("gameIdText");
+
+  btn.onclick = (e)=>{
+    e.stopPropagation();
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
+  };
+
+  copyBtn.onclick = (e)=>{
+    e.stopPropagation();
+    navigator.clipboard.writeText(idText.innerText);
+    msg.style.display = "block";
+    setTimeout(()=> msg.style.display = "none", 1200);
+  };
+
+  document.addEventListener("click", ()=>{
+    panel.style.display = "none";
+  });
+
+}); 
   
 </script>
 
@@ -3077,25 +3128,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div> 
   
-<div id="floatingRoot">
-  <div id="supportWidget">
 
-    <div id="supportBtn">Support Me</div>
-
-    <div id="supportPanel">
-      <div class="supportTitle">Gift me a game pack 🎁</div>
-
-      <div class="supportId" id="gameIdText">
-        20700149
-      </div>
-
-      <button id="copyBtn">Copy ID</button>
-
-      <div id="copyMsg">Copied!</div>
-    </div>
-
-  </div>
-</div>
   
 </body>
 </html>

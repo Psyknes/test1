@@ -1097,10 +1097,17 @@ height:80px;
   100%{opacity:0.5;}
 }
 
+#floatingRoot{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:2147483647;
+}
+  
 /* 🔹 Floating Support Widget */
 
 #supportWidget{
-  position:fixed;
+  position:absolute;
   bottom:20px;
   right:16px;
 
@@ -3078,7 +3085,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div id="maintenanceTimer" style="font-size:13px; color:#ccc;"></div>
 
 </div> 
-
+<div id="floatingRoot">
  <div id="supportWidget">
 
   <!-- Floating Button -->
@@ -3098,6 +3105,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 
 </div> 
+</div>
   
 </body>
 </html>

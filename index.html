@@ -1103,6 +1103,71 @@ height:80px;
     opacity:0.85;
   }
 }
+/* 🔥 Ghoulion fire animation */
+.seItem.ghoulionActive .seCircle{
+  position:relative;
+  overflow:hidden;
+}
+
+.seItem.ghoulionActive .seCircle::before{
+  content:"";
+  position:absolute;
+
+  top:-35%;
+  left:-35%;
+  width:170%;
+  height:170%;
+
+  background:url("images/effects/lion.gif") center/contain no-repeat;
+
+  pointer-events:none;
+  z-index:3;
+
+  transform-origin:center;
+
+  animation: ghoulionBurst 1.2s cubic-bezier(.2,.8,.2,1);
+}  
+
+.seItem.ghoulionActive .seCircle::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+
+  box-shadow:0 0 20px rgba(255,80,0,0.6);
+
+  pointer-events:none;
+  z-index:2;
+
+  animation: ghoulionGlow 2s ease-in-out infinite;
+}
+
+@keyframes ghoulionGlow{
+  0%,100%{ opacity:0.5; }
+  50%{ opacity:1; }
+}  
+  
+@keyframes ghoulionBurst{
+  0%{
+    transform: scale(0.5) rotate(-5deg);
+    opacity:0;
+  }
+
+  30%{
+    transform: scale(1.4) rotate(3deg);
+    opacity:1;
+  }
+
+  60%{
+    transform: scale(1.1) rotate(0deg);
+    opacity:0.9;
+  }
+
+  100%{
+    transform: scale(1);
+    opacity:0.85;
+  }
+}  
   
 @keyframes microShift{
   0%{ transform:translateX(0); }
@@ -3178,6 +3243,10 @@ function renderAllShortEvents(){
 if(e.name.toLowerCase().includes("terror") && state === "active"){
   extraClass = "terrorActive";
 }
+if(e.name.toLowerCase().includes("ghoulion") && state === "active"){
+  extraClass = "ghoulionActive";
+}
+      
 let timerColor = "#aaa";  // default cooldown
 
 if(state === "alert") timerColor = "#4cff88";   // green

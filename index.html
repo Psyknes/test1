@@ -1125,7 +1125,7 @@ height:80px;
 
   transform-origin:center;
 
-  animation: ghoulionBurst 1.2s cubic-bezier(.2,.8,.2,1);
+  animation: ghoulionCycle 8s infinite;
 }  
 
 .seItem.ghoulionActive .seCircle::after{
@@ -1147,23 +1147,28 @@ height:80px;
   50%{ opacity:1; }
 }  
   
-@keyframes ghoulionBurst{
-  0%{
-    transform: scale(0.5) rotate(-5deg);
-    opacity:0;
+@keyframes ghoulionCycle{
+
+  /* idle */
+  0%, 85%, 100%{
+    transform: scale(1);
+    opacity:0.85;
   }
 
-  30%{
+  /* start roar */
+  88%{
     transform: scale(1.4) rotate(3deg);
     opacity:1;
   }
 
-  60%{
-    transform: scale(1.1) rotate(0deg);
-    opacity:0.9;
+  /* peak */
+  92%{
+    transform: scale(1.2) rotate(-2deg);
+    opacity:1;
   }
 
-  100%{
+  /* settle */
+  96%{
     transform: scale(1);
     opacity:0.85;
   }

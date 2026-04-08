@@ -2579,6 +2579,10 @@ function formatToLocalTimeFromDate(date){
   });
 }
 
+function formatToLocalDay(date){
+  return date.toLocaleDateString('en-US', { weekday: 'short' });
+}
+  
 function getTaskState(task){
 
   if(!task || !task.times || !task.times.length) return null;
@@ -2681,7 +2685,7 @@ function renderTriple(){
 
     html += `
       <div class="row ${rowClass}">
-        <span>${t.d}</span>
+        <span>${formatToLocalDay(state.time)}</span>
         <span>${timeStr} — ${t.task}</span>
       </div>
     `;
@@ -2750,7 +2754,7 @@ function renderDouble(){
 
     html += `
       <div class="row ${rowClass}">
-        <span>${t.d}</span>
+        <span>${formatToLocalDay(state.time)}</span>
         <span>${timeStr} — ${t.task}</span>
       </div>
     `;

@@ -2594,7 +2594,7 @@ function getTaskState(task){
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let targetDay = days.indexOf(task.d);
 
-  let diff = targetDay - base.getUTCDay();
+  let diff = targetDay - now.getUTCDay();
   if(diff < 0) diff += 7;
 
   base.setUTCDate(base.getUTCDate() + diff);

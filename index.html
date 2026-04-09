@@ -1620,20 +1620,43 @@ height:80px;
   }
 }
 
-#copyTodayBtn{
-  position:fixed;
-  bottom:20px;
-  left:20px;
+#copyTodayBtn.r4Btn{
+  position: fixed;
+  bottom: 20px;
+  left: 20px;   /* 👈 left aligned */
 
-  padding:10px 14px;
-  border:none;
-  border-radius:10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
 
-  background:#222;
-  color:#fff;
-  cursor:pointer;
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  color: #fff;
 
-  z-index:9999;
+  font-size: 14px;
+  font-weight: bold;
+
+  border: 1px solid rgba(255,255,255,0.15);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  z-index: 9999;
+
+  box-shadow: 
+    0 4px 10px rgba(0,0,0,0.5),
+    inset 0 0 8px rgba(255,255,255,0.05);
+}
+
+/* subtle hover */
+#copyTodayBtn.r4Btn:hover{
+  transform: scale(1.08);
+}
+
+/* click feedback */
+#copyTodayBtn.r4Btn:active{
+  transform: scale(0.95);
 }
   
 </style>
@@ -3706,7 +3729,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div> 
   
-<button id="copyTodayBtn">Copy Today</button>
+<button id="copyTodayBtn" class="r4Btn">R4</button>
   
 </body>
 </html>

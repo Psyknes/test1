@@ -3577,53 +3577,70 @@ function buildTodayTasksText(){
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-  let seen = new Set();
+  function groupByTask(list){
+    let map = {};
 
-  function formatList(list, type){
+    list.forEach(t => {
+      if(days.indexOf(t.d) !== todayUTC) return;
+
+      let name = t.task || "Task";
+
+      if(!map[name]){
+        map[name] = [];
+      }
+
+      map[name].push(t);
+    });
+
+    return map;
+  }
+
+  function processGroup(group, type){
 
     let result = [];
 
-    list.forEach(t => {
+    Object.keys(group).forEach(name => {
 
-      let dIndex = days.indexOf(t.d);
-      if(dIndex !== todayUTC) return;
+      let entries = group[name];
 
-      // ✅ correct name
-      let name = t.t || t.name || "Task";
+      let powerPlay = entries.find(e => 
+        e.events && e.events.includes("Power Play")
+      );
 
-      // ✅ correct event type
-      let eventType = t.e || "";
+      let chosen = powerPlay || entries[0];
 
-      // ✅ correct time source
-      let times = t.times && t.times.length ? t.times : [t.utc || "00:00"];
+      let time = "00:00";
 
-      times.forEach(time => {
+      if(powerPlay){
+        // take real PP time
+        let t = powerPlay.times && powerPlay.times[0];
+        if(t) time = t;
+      }
 
-        let [h,m] = time.split(":");
+      let line = `${type} ${name} ${chosen.d}`;
 
-        let key = `${type}-${name}-${t.d}-${h}:${m}`;
-        if(seen.has(key)) return;
-        seen.add(key);
-
-        let line = `${type} ${name} ${t.d} ${h.padStart(2,"0")}:${m.padStart(2,"0")}`;
-
-        // add event type for double & exclusive
-        if(type !== "Triple" && eventType){
-          line += ` ${eventType}`;
+      if(type === "Triple"){
+        // always show time
+        line += ` ${time}`;
+      } else {
+        if(powerPlay){
+          line += ` ${time} Power Play`;
+        } else {
+          let eventName = (chosen.events && chosen.events[0]) || "";
+          line += ` ${eventName}`;
         }
+      }
 
-        result.push(line);
-
-      });
+      result.push(line);
 
     });
 
     return result;
   }
 
-  let t1 = formatList(triple, "Triple");
-  let t2 = formatList(double, "Double");
-  let t3 = formatList(dayExclusive, "Exclusive");
+  let t1 = processGroup(groupByTask(triple), "Triple");
+  let t2 = processGroup(groupByTask(double), "Double");
+  let t3 = processGroup(groupByTask(dayExclusive), "Exclusive");
 
   return [...t1, ...t2, ...t3].join("\n");
 }

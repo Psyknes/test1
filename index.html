@@ -3612,23 +3612,46 @@ function buildTodayTasksText(){
   }
 
   return text;
+  console.log("Triple:", triple);
+console.log("Double:", double);
+console.log("Exclusive:", exclusive);
 }  
 
 document.addEventListener("DOMContentLoaded", function(){
 
-  let btn = document.getElementById("copyTodayBtn");
-  if(!btn) return;
+  const btn = document.getElementById("copyTodayBtn");
+  if(!btn){
+    console.log("❌ copyTodayBtn not found");
+    return;
+  }
 
   btn.addEventListener("click", function(){
 
     let text = buildTodayTasksText();
 
-    navigator.clipboard.writeText(text);
+    if(!text){
+      console.log("❌ No text generated");
+      btn.innerText = "No Data";
+      setTimeout(()=> btn.innerText = "Copy Today", 1500);
+      return;
+    }
+
+    // ✅ Clipboard fallback-safe version
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text);
+    } else {
+      let textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+    }
+
+    console.log("✅ Copied:", text);
 
     btn.innerText = "Copied!";
-    setTimeout(()=>{
-      btn.innerText = "Copy Today";
-    },1500);
+    setTimeout(()=> btn.innerText = "Copy Today", 1500);
 
   });
 

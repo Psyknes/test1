@@ -1619,6 +1619,22 @@ height:80px;
     transform:scale(1);
   }
 }
+
+#copyTodayBtn{
+  position:fixed;
+  bottom:20px;
+  left:20px;
+
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+
+  background:#222;
+  color:#fff;
+  cursor:pointer;
+
+  z-index:9999;
+}
   
 </style>
 </head>
@@ -3551,6 +3567,72 @@ document.addEventListener("DOMContentLoaded", function(){
   });
 
 }); 
+
+function buildTodayTasksText(){
+
+  let now = new Date();
+
+  let todayUTC = now.getUTCDay();
+  let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  function formatUTC(date){
+    return date.toISOString().substring(11,16);
+  }
+
+  function getTodayTasks(list){
+    return list
+      .filter(t => {
+        let d = days.indexOf(t.d);
+        return d === todayUTC;
+      })
+      .map(t => {
+        let [h,m] = t.times[0].split(":");
+        return `${t.d} ${h.padStart(2,"0")}:${m.padStart(2,"0")}`;
+      });
+  }
+
+  let triple = getTodayTasks(tripleTasks);
+  let double = getTodayTasks(doubleTasks);
+  let exclusive = getTodayTasks(exclusiveTasks);
+
+  let text = "";
+
+  if(triple.length){
+    text += "TRIPLE: " + triple.join(", ");
+  }
+
+  if(double.length){
+    if(text) text += "\n";
+    text += "DOUBLE: " + double.join(", ");
+  }
+
+  if(exclusive.length){
+    if(text) text += "\n";
+    text += "EXCLUSIVE: " + exclusive.join(", ");
+  }
+
+  return text;
+}  
+
+document.addEventListener("DOMContentLoaded", function(){
+
+  let btn = document.getElementById("copyTodayBtn");
+  if(!btn) return;
+
+  btn.addEventListener("click", function(){
+
+    let text = buildTodayTasksText();
+
+    navigator.clipboard.writeText(text);
+
+    btn.innerText = "Copied!";
+    setTimeout(()=>{
+      btn.innerText = "Copy Today";
+    },1500);
+
+  });
+
+});
   
 </script>
 
@@ -3568,7 +3650,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div> 
   
-
+<button id="copyTodayBtn">Copy Today</button>
   
 </body>
 </html>

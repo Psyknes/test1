@@ -3609,25 +3609,35 @@ function buildTodayTasksText(){
 
       let chosen = powerPlay || entries[0];
 
-      let time = "00:00";
-
-      if(powerPlay){
-        // take real PP time
-        let t = powerPlay.times && powerPlay.times[0];
-        if(t) time = t;
-      }
-
       let line = `${type} ${name} ${chosen.d}`;
 
       if(type === "Triple"){
-        // always show time
-        line += ` ${time}`;
-      } else {
+        let time = powerPlay?.times?.[0] || "00:00";
+        line += ` ${time} UTC`;
+      }
+
+      else {
+
         if(powerPlay){
-          line += ` ${time} Power Play`;
+          let time = powerPlay.times?.[0] || "00:00";
+          line += ` ${time} UTC Power Play`;
         } else {
-          let eventName = (chosen.events && chosen.events[0]) || "";
-          line += ` ${eventName}`;
+          // 🔥 FIX: show ALL events + 00:00 UTC
+          let allEvents = [];
+
+          entries.forEach(e => {
+            if(e.events){
+              e.events.forEach(ev => {
+                if(!allEvents.includes(ev)){
+                  allEvents.push(ev);
+                }
+              });
+            }
+          });
+
+          let eventStr = allEvents.join(" + ");
+
+          line += ` 00:00 UTC ${eventStr}`;
         }
       }
 

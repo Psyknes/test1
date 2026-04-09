@@ -2591,7 +2591,7 @@ function getTaskState(task){
 
   let [h,m] = task.times[0].split(":").map(Number);
 
-  let base = new Date();
+  let base = new Date(now);
 
   base.setUTCHours(h, m, 0, 0);
 

@@ -2591,17 +2591,26 @@ function getTaskState(task){
 
   let [h,m] = task.times[0].split(":").map(Number);
 
-  let base = new Date(now);
-
-  base.setUTCHours(h, m, 0, 0);
-
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  let targetDay = days.indexOf(task.d);
+let targetDay = days.indexOf(task.d);
 
-  let diff = targetDay - now.getUTCDay();
-  if(diff < 0) diff += 7;
+// ✅ STEP 1: get current UTC day
+let currentUTCDay = now.getUTCDay();
 
-  base.setUTCDate(base.getUTCDate() + diff);
+// ✅ STEP 2: compute day difference
+let diff = targetDay - currentUTCDay;
+if(diff < 0) diff += 7;
+
+// ✅ STEP 3: build base date in UTC ONLY
+let base = new Date(Date.UTC(
+  now.getUTCFullYear(),
+  now.getUTCMonth(),
+  now.getUTCDate() + diff,
+  h,
+  m,
+  0,
+  0
+));
 
   let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
 

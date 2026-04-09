@@ -3577,7 +3577,7 @@ function buildTodayTasksText(){
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-  let seen = new Set(); // 🔥 removes duplicates
+  let seen = new Set();
 
   function formatList(list, type){
 
@@ -3588,28 +3588,28 @@ function buildTodayTasksText(){
       let dIndex = days.indexOf(t.d);
       if(dIndex !== todayUTC) return;
 
-      let name = t.name || t.task || "Task";
+      // ✅ correct name
+      let name = t.t || t.name || "Task";
 
-      t.times.forEach(time => {
+      // ✅ correct event type
+      let eventType = t.e || "";
+
+      // ✅ correct time source
+      let times = t.times && t.times.length ? t.times : [t.utc || "00:00"];
+
+      times.forEach(time => {
 
         let [h,m] = time.split(":");
 
-        // 🔥 build unique key
         let key = `${type}-${name}-${t.d}-${h}:${m}`;
         if(seen.has(key)) return;
         seen.add(key);
 
         let line = `${type} ${name} ${t.d} ${h.padStart(2,"0")}:${m.padStart(2,"0")}`;
 
-        // ✅ FIXED CATEGORY (event type)
-        if(type !== "Triple"){
-
-          // 🔥 YOU MAY NEED TO ADJUST THIS FIELD
-          let eventType = t.event || t.source || t.mode || "";
-
-          if(eventType){
-            line += ` ${eventType}`;
-          }
+        // add event type for double & exclusive
+        if(type !== "Triple" && eventType){
+          line += ` ${eventType}`;
         }
 
         result.push(line);

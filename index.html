@@ -3675,7 +3675,9 @@ function buildTodayTasksText(){
   let t2 = processGroup(groupByTask(double), "Double");
   let t3 = processGroup(groupByTask(dayExclusive), "Exclusive");
 
-  return [...t1, ...t2, ...t3].join("\n");
+  return [...t1, ...t2, ...t3]
+  .map(line => `• ${line}`)
+  .join("\n");
 }
 
 

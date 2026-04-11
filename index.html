@@ -3416,6 +3416,13 @@ console.log("renderAllShortEvents RUNNING");
       let start = new Date(baseStart.getTime() + cycles * repeatMs);
       let end = new Date(baseEnd.getTime() + cycles * repeatMs);
 
+      // 🔥 FIX: move to current/next cycle if already past
+if(now > end && repeatMs > 0){
+  alertStart = new Date(alertStart.getTime() + repeatMs);
+  start = new Date(start.getTime() + repeatMs);
+  end = new Date(end.getTime() + repeatMs);
+}
+
 console.log("SHORT EVENT DEBUG:", e.name, {
   now: new Date(),
   alertStart,

@@ -3415,6 +3415,13 @@ function renderAllShortEvents(){
       let start = new Date(baseStart.getTime() + cycles * repeatMs);
       let end = new Date(baseEnd.getTime() + cycles * repeatMs);
 
+console.log("SHORT EVENT DEBUG:", e.name, {
+  now: new Date(),
+  alertStart,
+  start,
+  end
+});
+      
 let state = "";
 let label = "";
 let remaining = 0;

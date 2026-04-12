@@ -3492,7 +3492,7 @@ function updateGoldmineBanner(){
   let isRunning = now < end;
 
   let minute = now.getUTCMinutes();
-  let inWindow = minute < 10;   // 🔧 testing window
+  let inWindow = minute < 30;   // 🔧 testing window
 
   let shouldShow = isRunning && inWindow;
 

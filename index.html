@@ -1658,6 +1658,28 @@ height:80px;
 #copyTodayBtn.r4Btn:active{
   transform: scale(0.95);
 }
+
+.hunterTitle.goldAlert{
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255,215,0,0.7);
+  animation: goldPulse 2s infinite, goldShake 4s infinite;
+}
+
+/* subtle pulse */
+@keyframes goldPulse{
+  0% { text-shadow: 0 0 6px rgba(255,215,0,0.5); }
+  50% { text-shadow: 0 0 14px rgba(255,215,0,1); }
+  100% { text-shadow: 0 0 6px rgba(255,215,0,0.5); }
+}
+
+/* very light shake */
+@keyframes goldShake{
+  0%, 90%, 100% { transform: translateX(0); }
+  92% { transform: translateX(-1px); }
+  94% { transform: translateX(1px); }
+  96% { transform: translateX(-1px); }
+  98% { transform: translateX(1px); }
+}
   
 </style>
 </head>
@@ -3255,6 +3277,7 @@ setInterval(function(){
   setInterval(function(){
     updateSpecialBar();
     renderAllShortEvents();
+    updateGoldmineAlert();
     updateTodayPanel();
     
     renderTriple();
@@ -3387,6 +3410,43 @@ function updateTodayPanel(){
   
 updateTodayPanel();
 
+function updateGoldmineAlert(){
+
+  const titleEl = document.querySelector(".hunterTitle");
+  if(!titleEl) return;
+
+  if(!window.longEvents || !longEvents.length) return;
+
+  let now = new Date();
+
+  // 🔍 find goldmine event
+  let goldmine = longEvents.find(e => 
+    e.name === "Underground Goldmine"
+  );
+
+  if(!goldmine) return;
+
+  let end = new Date(goldmine.end);
+
+  let isActive = now < end;
+
+  let minute = now.getMinutes();
+
+  let inWindow = minute < 5;
+
+  if(isActive && inWindow){
+
+    titleEl.innerText = "💰 Underground Mine: REFRESH Your GOLD MINE !!!";
+    titleEl.classList.add("goldAlert");
+
+  } else {
+
+    titleEl.innerText = "Task Hunter";
+    titleEl.classList.remove("goldAlert");
+
+  }
+}
+  
 function renderAllShortEvents(){
 console.log("renderAllShortEvents RUNNING");
   

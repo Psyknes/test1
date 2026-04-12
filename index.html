@@ -3271,6 +3271,9 @@ setInterval(function(){
   updateTimer();
   updateDoubleTimer();
   applyMaintenanceUI();
+    setTimeout(() => {
+    updateGoldmineAlert();
+  }, 80);
 }, 1000);
 
   // 🔹 LONG EVENT TICKER REFRESH (5 mins)

@@ -3420,6 +3420,8 @@ updateTodayPanel();
 
 function updateGoldmineAlert(){
 
+  console.log("Goldmine check running");
+
   // 🛑 DO NOT RUN during maintenance
   if(getMaintenanceState() !== "normal") return;
 

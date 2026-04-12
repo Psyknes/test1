@@ -1859,6 +1859,9 @@ height:80px;
 
 <script>
 
+const goldSound = new Audio("images/sounds/coin.mp3");
+goldSound.volume = 0.6; // adjust if needed
+  
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;
 let maintenanceLastSwitch = 0;  
@@ -3464,53 +3467,50 @@ function updateTodayPanel(){
   
 updateTodayPanel();
 
+let goldBannerActive = false;
+
 function updateGoldmineBanner(){
 
-  // 🔍 Safety: ensure data exists
   if(!longEvents || !longEvents.length) return;
 
   const banner = document.getElementById("goldmineBanner");
   if(!banner) return;
 
-  // 🕒 Current time (UTC-safe by default)
   let now = new Date();
 
-  // 🔍 Find Goldmine (robust match)
   let goldmine = longEvents.find(e => 
     e.name && e.name.toLowerCase().includes("goldmine")
   );
 
   if(!goldmine){
     banner.classList.remove("active");
+    goldBannerActive = false;   // 🔥 FIX
     return;
   }
 
-  // ⏳ Parse end time
   let end = new Date(goldmine.end);
-
-  // ✅ Check if event is still running
   let isRunning = now < end;
 
-  // 🔥 Hourly window (UTC-based)
   let minute = now.getUTCMinutes();
-  let inWindow = minute < 59;   // your current test window
+  let inWindow = minute < 10;   // 🔧 testing window
 
-  // 🧪 DEBUG (keep for now)
-  console.log({
-    nowUTC: now.toISOString(),
-    endUTC: end.toISOString(),
-    isRunning,
-    minute,
-    inWindow
-  });
+  let shouldShow = isRunning && inWindow;
 
-  // 🎯 FINAL TOGGLE
-  if(isRunning && inWindow){
+  if(shouldShow && !goldBannerActive){
     banner.classList.add("active");
-  }else{
-    banner.classList.remove("active");
-  }
 
+    // 🔊 PLAY SOUND ONCE
+    if(goldSound){
+      goldSound.currentTime = 0;
+      goldSound.play().catch(()=>{});
+    }
+
+    goldBannerActive = true;
+  }
+  else if(!shouldShow && goldBannerActive){
+    banner.classList.remove("active");
+    goldBannerActive = false;
+  }
 }
   
 function renderAllShortEvents(){

@@ -3444,25 +3444,19 @@ function updateTodayPanel(){
 updateTodayPanel();
 
 function updateGoldmineBanner(){
-console.log("Goldmine banner function running");
-  console.log("All long events:", longEvents.map(e => e.name));
-  if(!window.longEvents || !longEvents.length) return;
+
+  // 🔍 Safety: ensure data exists
+  if(!longEvents || !longEvents.length) return;
 
   const banner = document.getElementById("goldmineBanner");
   if(!banner) return;
 
+  // 🕒 Current time (UTC-safe by default)
   let now = new Date();
-let nowUTC = new Date(now.toISOString());
 
-  console.log("NOW:", now.toISOString());
-console.log("END:", e.end);
-
-  // 🔥 USE UTC (IMPORTANT)
-  let nowUTC = new Date(now.toISOString());
-
-  // 🔍 find goldmine
+  // 🔍 Find Goldmine (robust match)
   let goldmine = longEvents.find(e => 
-    e.name === "Underground Goldmine"
+    e.name && e.name.toLowerCase().includes("goldmine")
   );
 
   if(!goldmine){
@@ -3470,14 +3464,26 @@ console.log("END:", e.end);
     return;
   }
 
+  // ⏳ Parse end time
   let end = new Date(goldmine.end);
 
-  let isRunning = nowUTC < end;
+  // ✅ Check if event is still running
+  let isRunning = now < end;
 
-  // 🔥 hourly window (UTC)
-  let minute = nowUTC.getUTCMinutes();
-  let inWindow = minute < 50;
+  // 🔥 Hourly window (UTC-based)
+  let minute = now.getUTCMinutes();
+  let inWindow = minute < 50;   // your current test window
 
+  // 🧪 DEBUG (keep for now)
+  console.log({
+    nowUTC: now.toISOString(),
+    endUTC: end.toISOString(),
+    isRunning,
+    minute,
+    inWindow
+  });
+
+  // 🎯 FINAL TOGGLE
   if(isRunning && inWindow){
     banner.classList.add("active");
   }else{

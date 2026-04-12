@@ -415,6 +415,7 @@ margin-top:0;
 } 
   
 .hunterUnified{
+position:relative;  
 padding:8px;
 background:#0d0d0d;
 border:1px solid #333;
@@ -1680,6 +1681,46 @@ height:80px;
   96% { transform: translateX(-1px); }
   98% { transform: translateX(1px); }
 }
+
+/* 🔥 Goldmine Overlay */
+
+#goldmineOverlay{
+  position:absolute;
+  inset:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:rgba(0,0,0,0.75);
+  backdrop-filter: blur(2px);
+
+  z-index:10;
+
+  opacity:0;
+  pointer-events:none;
+
+  transition:opacity 0.3s ease;
+}
+
+#goldmineOverlay.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.goldmineText{
+  color:#ffd700;
+  font-weight:bold;
+  font-size:16px;
+  text-align:center;
+
+  text-shadow:
+    0 0 8px rgba(255,215,0,0.7),
+    0 0 18px rgba(255,180,0,0.5);
+
+  animation: goldPulse 2s infinite, goldShake 4s infinite;
+}
+
   
 </style>
 </head>
@@ -1738,7 +1779,12 @@ height:80px;
 </div> 
   
 <div id="taskHunter" class="card hunterUnified">
-
+<div id="goldmineOverlay">
+  <div class="goldmineText">
+    💰 Underground Mine<br>
+    REFRESH YOUR GOLD!
+  </div>
+</div>
 <div class="hunterTitle">Task Hunter</div>
 
 <div class="hunterStack">
@@ -3424,25 +3470,13 @@ function updateGoldmineAlert(){
 
   console.log("Goldmine check running");
 
-  let state = getMaintenanceState();
-
-if(state === "emergency") return; // allow during scheduled
-  // 🛑 maintenance guard
-  //if(getMaintenanceState() !== "normal") return;
-
-  // ✅ FIRST declare DOM safely
-  const hunter = document.getElementById("taskHunter");
-  if(!hunter) return;
-
-  const titleEl = hunter.querySelector(".hunterTitle");
-  if(!titleEl || !titleEl.isConnected) return;
-
-  // ✅ data check
   if(!window.longEvents || !longEvents.length) return;
+
+  const overlay = document.getElementById("goldmineOverlay");
+  if(!overlay) return;
 
   let now = new Date();
 
-  // 🔍 find event
   let goldmine = longEvents.find(e => 
     e.name && e.name.toLowerCase().includes("gold")
   );
@@ -3452,28 +3486,19 @@ if(state === "emergency") return; // allow during scheduled
   let end = new Date(goldmine.end);
 
   let isActive = now < end;
+
   let minute = now.getMinutes();
 
-  let inWindow = minute < 50;   // your test window
-
-  // 🔍 DEBUG (optional, keep for now)
-  console.log({
-    isActive,
-    minute,
-    inWindow,
-    now,
-    end
-  });
+  // 🔥 show first 20 mins of every hour (your current test window)
+  let inWindow = minute < 50;
 
   if(isActive && inWindow){
 
-    titleEl.innerText = "💰 Underground Mine: REFRESH Your GOLD MINE !!!";
-    titleEl.classList.add("goldAlert");
+    overlay.classList.add("active");
 
-  } else {
+  }else{
 
-    titleEl.innerText = "Task Hunter";
-    titleEl.classList.remove("goldAlert");
+    overlay.classList.remove("active");
 
   }
 }

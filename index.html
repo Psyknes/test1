@@ -3441,6 +3441,7 @@ updateTodayPanel();
 
 function updateGoldmineBanner(){
 
+  console.log("All long events:", longEvents.map(e => e.name));
   if(!window.longEvents || !longEvents.length) return;
 
   const banner = document.getElementById("goldmineBanner");
@@ -3467,7 +3468,7 @@ function updateGoldmineBanner(){
 
   // 🔥 hourly window (UTC)
   let minute = nowUTC.getUTCMinutes();
-  let inWindow = minute < 30;
+  let inWindow = minute < 50;
 
   if(isRunning && inWindow){
     banner.classList.add("active");

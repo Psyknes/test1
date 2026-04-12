@@ -2162,6 +2162,7 @@ async function loadSpecialEvents(){
 
     console.log("Short events loaded:", shortEvents.length);
     console.log("Long events loaded:", longEvents.length);
+    updateGoldmineAlert();
 
   }catch(e){
     console.log("Special events load error", e);
@@ -3412,6 +3413,7 @@ updateTodayPanel();
 
 function updateGoldmineAlert(){
 
+  console.log("Goldmine check running", longEvents);
   const titleEl = document.querySelector(".hunterTitle");
   if(!titleEl) return;
 

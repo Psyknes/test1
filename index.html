@@ -1859,21 +1859,6 @@ height:80px;
 
 <script>
 
-let audioUnlocked = false;
-
-document.addEventListener("click", () => {
-  if(!audioUnlocked){
-    goldSound.play().then(() => {
-      goldSound.pause();
-      goldSound.currentTime = 0;
-      audioUnlocked = true;
-      console.log("🔊 Audio unlocked");
-    }).catch(()=>{});
-  }
-});  
-  
-const goldSound = new Audio("images/sounds/coin.mp3");
-goldSound.volume = 0.6; // adjust if needed
   
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;
@@ -3505,19 +3490,14 @@ function updateGoldmineBanner(){
   let isRunning = now < end;
 
   let minute = now.getUTCMinutes();
-  let inWindow = minute < 30;   // 🔧 testing window
+  let inWindow = minute < 5;   // 🔧 testing window
 
   let shouldShow = isRunning && inWindow;
 
   if(shouldShow && !goldBannerActive){
     banner.classList.add("active");
 
-    // 🔊 PLAY SOUND ONCE
-    if(goldSound){
-      goldSound.currentTime = 0;
-      goldSound.play().catch(()=>{});
-    }
-
+    
     goldBannerActive = true;
   }
   else if(!shouldShow && goldBannerActive){

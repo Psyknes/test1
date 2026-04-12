@@ -1705,6 +1705,18 @@ height:80px;
 .goldmineBanner.active{
   animation: goldPulse 2s infinite;
 }
+
+@keyframes goldShake{
+  0% { transform: translateY(0); }
+  25% { transform: translateY(-1px); }
+  50% { transform: translateY(1px); }
+  75% { transform: translateY(-1px); }
+  100% { transform: translateY(0); }
+}
+
+.goldmineBanner.active{
+  animation: goldPulse 2s infinite, goldShake 1.5s infinite;
+}  
   
 </style>
 </head>

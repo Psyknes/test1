@@ -415,6 +415,7 @@ margin-top:0;
 } 
   
 .hunterUnified{
+position:relative;  
 padding:8px;
 background:#0d0d0d;
 border:1px solid #333;
@@ -1658,6 +1659,52 @@ height:80px;
 #copyTodayBtn.r4Btn:active{
   transform: scale(0.95);
 }
+
+/* 🔥 Goldmine Banner (Header Overlay) */
+
+.goldmineBanner{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:linear-gradient(90deg, #3a2a00, #7a5a00, #3a2a00);
+  color:#ffd700;
+  font-weight:bold;
+  font-size:13px;
+
+  text-shadow:0 0 8px rgba(255,215,0,0.7);
+
+  opacity:0;
+  pointer-events:none;
+
+  z-index:5;
+
+  transform:translateY(-100%);
+  transition:all 0.3s ease;
+}
+
+/* ACTIVE STATE */
+.goldmineBanner.active{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* subtle pulse */
+@keyframes goldPulse{
+  0% { text-shadow: 0 0 6px rgba(255,215,0,0.5); }
+  50% { text-shadow: 0 0 14px rgba(255,215,0,1); }
+  100% { text-shadow: 0 0 6px rgba(255,215,0,0.5); }
+}
+
+.goldmineBanner.active{
+  animation: goldPulse 2s infinite;
+}
   
 </style>
 </head>
@@ -1716,6 +1763,10 @@ height:80px;
 </div> 
   
 <div id="taskHunter" class="card hunterUnified">
+
+  <div id="goldmineBanner" class="goldmineBanner">
+  💰 Refresh Gold Mine!
+</div>
 
 <div class="hunterTitle">Task Hunter</div>
 
@@ -3246,6 +3297,7 @@ setInterval(function(){
   updateTimer();
   updateDoubleTimer();
   applyMaintenanceUI();
+  updateGoldmineBanner();
 }, 1000);
 
   // 🔹 LONG EVENT TICKER REFRESH (5 mins)
@@ -3387,6 +3439,44 @@ function updateTodayPanel(){
   
 updateTodayPanel();
 
+function updateGoldmineBanner(){
+
+  if(!window.longEvents || !longEvents.length) return;
+
+  const banner = document.getElementById("goldmineBanner");
+  if(!banner) return;
+
+  let now = new Date();
+
+  // 🔥 USE UTC (IMPORTANT)
+  let nowUTC = new Date(now.toISOString());
+
+  // 🔍 find goldmine
+  let goldmine = longEvents.find(e => 
+    e.name === "Underground Goldmine"
+  );
+
+  if(!goldmine){
+    banner.classList.remove("active");
+    return;
+  }
+
+  let end = new Date(goldmine.end);
+
+  let isRunning = nowUTC < end;
+
+  // 🔥 hourly window (UTC)
+  let minute = nowUTC.getUTCMinutes();
+  let inWindow = minute < 30;
+
+  if(isRunning && inWindow){
+    banner.classList.add("active");
+  }else{
+    banner.classList.remove("active");
+  }
+
+}
+  
 function renderAllShortEvents(){
 console.log("renderAllShortEvents RUNNING");
   

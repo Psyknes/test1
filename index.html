@@ -3452,6 +3452,10 @@ console.log("Goldmine banner function running");
   if(!banner) return;
 
   let now = new Date();
+let nowUTC = new Date(now.toISOString());
+
+  console.log("NOW:", now.toISOString());
+console.log("END:", e.end);
 
   // 🔥 USE UTC (IMPORTANT)
   let nowUTC = new Date(now.toISOString());

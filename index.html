@@ -2443,6 +2443,8 @@ ${e.name} • ${d}d ${h}h ${m}m
 
 document.getElementById("eventTicker").innerHTML =
 '<div class="eventScroll"><div class="scrollInner">' + html + html + '</div></div>';
+
+updateGoldmineBanner();  
 }    
 
 async function loadMaintenance(){
@@ -3442,7 +3444,7 @@ function updateTodayPanel(){
 updateTodayPanel();
 
 function updateGoldmineBanner(){
-
+console.log("Goldmine banner function running");
   console.log("All long events:", longEvents.map(e => e.name));
   if(!window.longEvents || !longEvents.length) return;
 

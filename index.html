@@ -2162,7 +2162,9 @@ async function loadSpecialEvents(){
 
     console.log("Short events loaded:", shortEvents.length);
     console.log("Long events loaded:", longEvents.length);
-    updateGoldmineAlert();
+    setTimeout(() => {
+  updateGoldmineAlert();
+}, 120);
 
   }catch(e){
     console.log("Special events load error", e);
@@ -3278,7 +3280,9 @@ setInterval(function(){
   setInterval(function(){
     updateSpecialBar();
     renderAllShortEvents();
+     setTimeout(() => {
     updateGoldmineAlert();
+  }, 80);
     updateTodayPanel();
     
     renderTriple();
@@ -3413,7 +3417,9 @@ updateTodayPanel();
 
 function updateGoldmineAlert(){
 
-  console.log("Goldmine check running", longEvents);
+  // 🛑 DO NOT RUN during maintenance
+  if(getMaintenanceState() !== "normal") return;
+
   const titleEl = document.querySelector(".hunterTitle");
   if(!titleEl) return;
 
@@ -3421,9 +3427,9 @@ function updateGoldmineAlert(){
 
   let now = new Date();
 
-  // 🔍 find goldmine event
+  // 🔍 find goldmine
   let goldmine = longEvents.find(e => 
-    e.name === "Underground Goldmine"
+    e.name && e.name.toLowerCase().includes("goldmine")
   );
 
   if(!goldmine) return;
@@ -3434,7 +3440,7 @@ function updateGoldmineAlert(){
 
   let minute = now.getMinutes();
 
-  let inWindow = minute < 50;
+  let inWindow = minute < 50;   // 👈 your test window
 
   if(isActive && inWindow){
 

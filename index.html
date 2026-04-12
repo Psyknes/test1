@@ -415,7 +415,6 @@ margin-top:0;
 } 
   
 .hunterUnified{
-position:relative;  
 padding:8px;
 background:#0d0d0d;
 border:1px solid #333;
@@ -1659,68 +1658,6 @@ height:80px;
 #copyTodayBtn.r4Btn:active{
   transform: scale(0.95);
 }
-
-.hunterTitle.goldAlert{
-  color: #ffd700;
-  text-shadow: 0 0 8px rgba(255,215,0,0.7);
-  animation: goldPulse 2s infinite, goldShake 4s infinite;
-}
-
-/* subtle pulse */
-@keyframes goldPulse{
-  0% { text-shadow: 0 0 6px rgba(255,215,0,0.5); }
-  50% { text-shadow: 0 0 14px rgba(255,215,0,1); }
-  100% { text-shadow: 0 0 6px rgba(255,215,0,0.5); }
-}
-
-/* very light shake */
-@keyframes goldShake{
-  0%, 90%, 100% { transform: translateX(0); }
-  92% { transform: translateX(-1px); }
-  94% { transform: translateX(1px); }
-  96% { transform: translateX(-1px); }
-  98% { transform: translateX(1px); }
-}
-
-/* 🔥 Goldmine Overlay */
-
-#goldmineOverlay{
-  position:absolute;
-  inset:0;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  background:rgba(0,0,0,0.75);
-  backdrop-filter: blur(2px);
-
-  z-index:10;
-
-  opacity:0;
-  pointer-events:none;
-
-  transition:opacity 0.3s ease;
-}
-
-#goldmineOverlay.active{
-  opacity:1;
-  pointer-events:auto;
-}
-
-.goldmineText{
-  color:#ffd700;
-  font-weight:bold;
-  font-size:16px;
-  text-align:center;
-
-  text-shadow:
-    0 0 8px rgba(255,215,0,0.7),
-    0 0 18px rgba(255,180,0,0.5);
-
-  animation: goldPulse 2s infinite, goldShake 4s infinite;
-}
-
   
 </style>
 </head>
@@ -1779,12 +1716,7 @@ height:80px;
 </div> 
   
 <div id="taskHunter" class="card hunterUnified">
-<div id="goldmineOverlay">
-  <div class="goldmineText">
-    💰 Underground Mine<br>
-    REFRESH YOUR GOLD!
-  </div>
-</div>
+
 <div class="hunterTitle">Task Hunter</div>
 
 <div class="hunterStack">
@@ -1859,7 +1791,7 @@ let maintenanceLastSwitch = 0;
 let currentMaintenanceState = null;  
 
 function getMaintenanceState(){
-console.log("Maintenance check running");
+
 if(!maintenanceData) return "normal";
 
 let now = new Date();
@@ -2208,9 +2140,6 @@ async function loadSpecialEvents(){
 
     console.log("Short events loaded:", shortEvents.length);
     console.log("Long events loaded:", longEvents.length);
-    setTimeout(() => {
-  updateGoldmineAlert();
-}, 120);
 
   }catch(e){
     console.log("Special events load error", e);
@@ -3288,8 +3217,6 @@ timeEl.innerHTML = `
 loadTicker();
 setInterval(loadTicker, 60000); // every 1 min
 
-setInterval(updateGoldmineAlert, 30000); // every 30 sec  
-
 // 🔹 LOAD ALL CORE DATA FIRST (CRITICAL FIX)
 Promise.all([
   loadTasks(),
@@ -3319,9 +3246,6 @@ setInterval(function(){
   updateTimer();
   updateDoubleTimer();
   applyMaintenanceUI();
-    setTimeout(() => {
-    updateGoldmineAlert();
-  }, 80);
 }, 1000);
 
   // 🔹 LONG EVENT TICKER REFRESH (5 mins)
@@ -3331,9 +3255,6 @@ setInterval(function(){
   setInterval(function(){
     updateSpecialBar();
     renderAllShortEvents();
-     setTimeout(() => {
-    updateGoldmineAlert();
-  }, 80);
     updateTodayPanel();
     
     renderTriple();
@@ -3466,47 +3387,6 @@ function updateTodayPanel(){
   
 updateTodayPanel();
 
-function updateGoldmineAlert(){
-console.log("Goldmine DEBUG:", {
-  eventName: e?.name,
-  state: data?.state,
-  now: new Date()
-});
-  console.log("Goldmine check running");
-
-  if(!window.longEvents || !longEvents.length) return;
-
-  const overlay = document.getElementById("goldmineOverlay");
-  if(!overlay) return;
-
-  let now = new Date();
-
-  let goldmine = longEvents.find(e => 
-    e.name && e.name.toLowerCase().includes("gold")
-  );
-
-  if(!goldmine) return;
-
-  let end = new Date(goldmine.end);
-
-  let isActive = now < end;
-
-  let minute = now.getMinutes();
-
-  // 🔥 show first 20 mins of every hour (your current test window)
-  let inWindow = minute < 50;
-
-  if(isActive && inWindow){
-
-    overlay.classList.add("active");
-
-  }else{
-
-    overlay.classList.remove("active");
-
-  }
-}
-  
 function renderAllShortEvents(){
 console.log("renderAllShortEvents RUNNING");
   

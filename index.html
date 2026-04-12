@@ -1813,7 +1813,7 @@ let maintenanceLastSwitch = 0;
 let currentMaintenanceState = null;  
 
 function getMaintenanceState(){
-
+console.log("Maintenance state:", getMaintenanceState());
 if(!maintenanceData) return "normal";
 
 let now = new Date();
@@ -3242,6 +3242,8 @@ timeEl.innerHTML = `
 loadTicker();
 setInterval(loadTicker, 60000); // every 1 min
 
+setInterval(updateGoldmineAlert, 30000); // every 30 sec  
+
 // 🔹 LOAD ALL CORE DATA FIRST (CRITICAL FIX)
 Promise.all([
   loadTasks(),
@@ -3422,8 +3424,11 @@ function updateGoldmineAlert(){
 
   console.log("Goldmine check running");
 
+  let state = getMaintenanceState();
+
+if(state === "emergency") return; // allow during scheduled
   // 🛑 maintenance guard
-  if(getMaintenanceState() !== "normal") return;
+  //if(getMaintenanceState() !== "normal") return;
 
   // ✅ FIRST declare DOM safely
   const hunter = document.getElementById("taskHunter");

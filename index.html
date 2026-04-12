@@ -3467,7 +3467,11 @@ function updateTodayPanel(){
 updateTodayPanel();
 
 function updateGoldmineAlert(){
-
+console.log("Goldmine DEBUG:", {
+  eventName: e?.name,
+  state: data?.state,
+  now: new Date()
+});
   console.log("Goldmine check running");
 
   if(!window.longEvents || !longEvents.length) return;

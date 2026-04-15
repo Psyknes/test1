@@ -2871,18 +2871,29 @@ function renderDouble(){
 
   list.sort((a,b)=>{
 
-    let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
+  let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
 
-    if(order[a.state.status] !== order[b.state.status]){
-      return order[a.state.status] - order[b.state.status];
-    }
+  // 1. status
+  if(order[a.state.status] !== order[b.state.status]){
+    return order[a.state.status] - order[b.state.status];
+  }
 
-    if(a.task.priority !== b.task.priority){
-      return a.task.priority - b.task.priority;
-    }
+  // 🔥 2. DAY DIFFERENCE (FIX)
+  let dayA = a.state.time.getUTCDay();
+  let dayB = b.state.time.getUTCDay();
 
-    return a.state.time - b.state.time;
-  });
+  if(dayA !== dayB){
+    return dayA - dayB;
+  }
+
+  // 3. priority (ONLY within same day)
+  if(a.task.priority !== b.task.priority){
+    return a.task.priority - b.task.priority;
+  }
+
+  // 4. time
+  return a.state.time - b.state.time;
+});
 
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
 

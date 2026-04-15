@@ -2773,6 +2773,11 @@ function getTaskState(task){
   return { status: "UPCOMING", time: bestTime };
 }
 
+let collapseState = {
+  triple: true,
+  double: true
+};  
+
 function toggleList(type){
 
   collapseState[type] = !collapseState[type];

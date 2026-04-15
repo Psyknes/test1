@@ -2879,12 +2879,17 @@ function renderDouble(){
   }
 
   // 🔥 2. DAY DIFFERENCE (FIX)
-  let dayA = a.state.time.getUTCDay();
-  let dayB = b.state.time.getUTCDay();
+  let today = new Date().getUTCDay();
 
-  if(dayA !== dayB){
-    return dayA - dayB;
-  }
+let dayA = a.state.time.getUTCDay();
+let dayB = b.state.time.getUTCDay();
+
+let diffA = (dayA - today + 7) % 7;
+let diffB = (dayB - today + 7) % 7;
+
+if(diffA !== diffB){
+  return diffA - diffB;
+}
 
   // 3. priority (ONLY within same day)
   if(a.task.priority !== b.task.priority){

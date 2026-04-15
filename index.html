@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-P41P2Y6L3F"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-P41P2Y6L3F');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tiles Survive Alliance Planner</title>
   
@@ -2705,49 +2713,65 @@ function getTaskState(task){
 
   let now = new Date();
 
-  let [h,m] = task.times[0].split(":").map(Number);
-
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let targetDay = days.indexOf(task.d);
+  let targetDay = days.indexOf(task.d);
+  let currentUTCDay = now.getUTCDay();
 
-// ✅ STEP 1: get current UTC day
-let currentUTCDay = now.getUTCDay();
+  let bestTime = null;
 
-// ✅ STEP 2: compute day difference
-let diff = targetDay - currentUTCDay;
-if(diff < 0) diff += 7;
+  task.times.forEach(t => {
 
-// ✅ STEP 3: build base date in UTC ONLY
-let base = new Date(Date.UTC(
-  now.getUTCFullYear(),
-  now.getUTCMonth(),
-  now.getUTCDate() + diff,
-  h,
-  m,
-  0,
-  0
-));
+    let [h,m] = t.split(":").map(Number);
 
-  let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
+    // day difference
+    let diff = targetDay - currentUTCDay;
+    if(diff < 0) diff += 7;
 
-  if(now >= base && now <= end){
-    return { status: "ACTIVE", time: base };
+    // base occurrence this week
+    let base = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + diff,
+      h,
+      m,
+      0,
+      0
+    ));
+
+    let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
+
+    let candidate;
+
+    if(now >= base && now <= end){
+      candidate = base; // active
+    }
+    else if(now < base){
+      candidate = base; // upcoming this week
+    }
+    else{
+      // next week
+      let next = new Date(base);
+      next.setUTCDate(next.getUTCDate() + 7);
+      candidate = next;
+    }
+
+    // pick earliest valid future time
+    if(!bestTime || candidate < bestTime){
+      bestTime = candidate;
+    }
+
+  });
+
+  if(!bestTime) return null;
+
+  let end = new Date(bestTime.getTime() + task.duration * 60 * 60 * 1000);
+
+  if(now >= bestTime && now <= end){
+    return { status: "ACTIVE", time: bestTime };
   }
 
-  if(now < base){
-    return { status: "UPCOMING", time: base };
-  }
-
-  let next = new Date(base);
-  next.setUTCDate(next.getUTCDate() + 7);
-
-  return { status: "UPCOMING", time: next };
+  return { status: "UPCOMING", time: bestTime };
 }
-
-let collapseState = {
-  triple: true,
-  double: true
-};
 
 function toggleList(type){
 

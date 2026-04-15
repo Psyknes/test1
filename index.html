@@ -2746,14 +2746,19 @@ function getTaskState(task){
       candidate = base; // active
     }
     else if(now < base){
-      candidate = base; // upcoming this week
-    }
-    else{
-      // next week
-      let next = new Date(base);
-      next.setUTCDate(next.getUTCDate() + 7);
-      candidate = next;
-    }
+  candidate = base; // upcoming this week
+}
+else{
+  // 🔥 if TODAY and already finished → skip
+  if(diff === 0){
+    return; // skip this time slot completely
+  }
+
+  // otherwise push to next week
+  let next = new Date(base);
+  next.setUTCDate(next.getUTCDate() + 7);
+  candidate = next;
+}
 
     // pick earliest valid future time
     if(!bestTime || candidate < bestTime){

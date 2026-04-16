@@ -2757,17 +2757,21 @@ if(t && typeof t === "string"){
     if(isNaN(m)) m = 0;
 
     // 🔥 compute day difference (THIS WEEK FIRST)
-    let diff = targetDay - currentUTCDay;
-
     let base = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() + diff,
-      h,
-      m,
-      0,
-      0
-    ));
+  now.getUTCFullYear(),
+  now.getUTCMonth(),
+  now.getUTCDate(),
+  h,
+  m,
+  0,
+  0
+));
+
+// 🔥 move to correct weekday explicitly
+let dayShift = targetDay - base.getUTCDay();
+if(dayShift < 0) dayShift += 7;
+
+base.setUTCDate(base.getUTCDate() + dayShift);
 
     let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
 

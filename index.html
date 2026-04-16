@@ -3565,7 +3565,7 @@ console.log("renderAllShortEvents RUNNING");
   let container = document.getElementById("shortEventsRow");
   if(!container) return;
 
-  let now = new Date();
+  let now = getNow();
 
   let html = shortEvents
     .filter(e => e.active)

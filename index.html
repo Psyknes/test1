@@ -2714,6 +2714,7 @@ function getTaskState(task){
   //let now = new Date();
   //TESTING wED BUG
   let now = window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
+  console.log("TEST_NOW:", window.TEST_NOW, new Date(window.TEST_NOW));
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let targetDay = days.indexOf(task.d);

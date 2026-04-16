@@ -1867,6 +1867,9 @@ height:80px;
 
 <script>
 
+function getNow(){
+  return window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
+}  
   
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;
@@ -2711,7 +2714,7 @@ function getTaskState(task){
 
   if(!task || !task.times || !task.times.length) return null;
 
-  //let now = new Date();
+  //let now = getNow();
   //TESTING wED BUG
   let now = window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
   console.log("TEST_NOW:", window.TEST_NOW, new Date(window.TEST_NOW));
@@ -3188,7 +3191,7 @@ function initHunterUI(){
 function updateTimer(){
 
   let {triple} = getTasks();
-  let now = new Date();
+  let now = getNow();
 
   let active = null;
   let upcoming = [];
@@ -3264,7 +3267,7 @@ timeEl.innerHTML = `
 function updateDoubleTimer(){
 
   let {double} = getTasks();
-  let now = new Date();
+  let now = getNow();
 
   let active = null;
   let upcoming = [];
@@ -3398,7 +3401,7 @@ function updateTodayPanel(){
   let container = document.getElementById("todayPanel");
   let html = "";
 
-  let now = new Date();
+  let now = getNow();
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let today = days[now.getUTCDay()];
 

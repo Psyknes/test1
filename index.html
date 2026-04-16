@@ -2696,6 +2696,9 @@ if(window.debugMode){
 }
 
 function formatToLocalTimeFromDate(date){
+
+  if(!date) return "--:--";   // ✅ FIX
+
   let h = date.getUTCHours();
   let m = date.getUTCMinutes();
 
@@ -2783,8 +2786,8 @@ function getTaskState(task){
 
   // 🔥 COMPLETED (today fully passed)
   if(isToday && !hasFutureToday){
-    return { status: "COMPLETED", time: bestUpcoming };
-  }
+  return { status: "COMPLETED", time: now }; // ✅ never null
+}
 
   // 🔥 UPCOMING
   if(bestUpcoming){

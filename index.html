@@ -2726,27 +2726,20 @@ function getTaskState(task){
   let targetDay = days.indexOf(task.d);
   let currentUTCDay = now.getUTCDay();
 
-  let isToday = (targetDay === currentUTCDay);
-
-  let bestUpcoming = null;
+  let bestTime = null;
   let isActive = false;
-  let hasFutureToday = false;
 
   task.times.forEach(t => {
 
-    let h = 0, m = 0;
+    if(!t || typeof t !== "string" || !t.includes(":")) return;
 
-if(t && typeof t === "string" && t.includes(":")){
-  let parts = t.split(":");
-  h = Number(parts[0]);
-  m = Number(parts[1]);
+    let [h,m] = t.split(":").map(Number);
 
-  if(isNaN(h)) h = 0;
-  if(isNaN(m)) m = 0;
-}
+    if(isNaN(h)) h = 0;
+    if(isNaN(m)) m = 0;
 
+    // 🔥 compute day difference (THIS WEEK FIRST)
     let diff = targetDay - currentUTCDay;
-    if(diff < 0) diff += 7;
 
     let base = new Date(Date.UTC(
       now.getUTCFullYear(),
@@ -2760,50 +2753,44 @@ if(t && typeof t === "string" && t.includes(":")){
 
     let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
 
+    // 🔥 if already fully past → shift to next week
+    if(end < now){
+      base.setUTCDate(base.getUTCDate() + 7);
+      end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
+    }
+
     // ✅ ACTIVE
     if(now >= base && now <= end){
       isActive = true;
-      bestUpcoming = base;
-      return;
-    }
 
-    // ✅ FUTURE TODAY
-    if(isToday && now < base){
-      hasFutureToday = true;
-
-      if(!bestUpcoming || base < bestUpcoming){
-        bestUpcoming = base;
+      if(!bestTime || base < bestTime){
+        bestTime = base;
       }
       return;
     }
 
-    // ✅ FUTURE THIS WEEK
-    if(!isToday && now < base){
-      if(!bestUpcoming || base < bestUpcoming){
-        bestUpcoming = base;
+    // ✅ UPCOMING (future)
+    if(now < base){
+      if(!bestTime || base < bestTime){
+        bestTime = base;
       }
       return;
     }
 
-    // 🚫 DO NOT PUSH NEXT WEEK HERE
   });
 
   // 🔥 ACTIVE
   if(isActive){
-    return { status: "ACTIVE", time: bestUpcoming };
+    return { status: "ACTIVE", time: bestTime };
   }
-
-  // 🔥 COMPLETED (today fully passed)
-  if(isToday && !hasFutureToday){
-  return { status: "COMPLETED", time: now }; // ✅ never null
-}
 
   // 🔥 UPCOMING
-  if(bestUpcoming){
-    return { status: "UPCOMING", time: bestUpcoming };
+  if(bestTime){
+    return { status: "UPCOMING", time: bestTime };
   }
 
-  return null;
+  // 🔥 FALLBACK (should rarely hit)
+  return { status: "COMPLETED", time: now };
 }
 
 let collapseState = {

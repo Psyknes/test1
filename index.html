@@ -3302,11 +3302,17 @@ function updateDoubleTimer(){
 
   if(!best && upcoming.length){
     upcoming.sort((a,b)=>{
-      if(a.task.priority !== b.task.priority){
-        return a.task.priority - b.task.priority;
-      }
-      return a.state.time - b.state.time;
-    });
+
+  // 🔥 TIME FIRST (CRITICAL FIX)
+  let timeDiff = a.state.time - b.state.time;
+  if(timeDiff !== 0){
+    return timeDiff;
+  }
+
+  // 🔥 PRIORITY ONLY IF SAME TIME
+  return a.task.priority - b.task.priority;
+
+});
     best = upcoming[0];
   }
 

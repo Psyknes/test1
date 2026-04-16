@@ -2725,6 +2725,8 @@ function getTaskState(task){
 
   let bestUpcoming = null;
   let isActive = false;
+  let isToday = (targetDay === currentUTCDay);
+  let allPassedToday = true;
 
   task.times.forEach(t => {
 
@@ -2749,31 +2751,45 @@ function getTaskState(task){
     if(now >= base && now <= end){
       isActive = true;
       bestUpcoming = base;
-      return;
     }
 
     // ✅ FUTURE (this week)
     if(now < base){
+      allPassedToday = false;
+
       if(!bestUpcoming || base < bestUpcoming){
         bestUpcoming = base;
       }
-      return;
     }
 
-    // ✅ PAST → consider next week
-    let next = new Date(base);
-    next.setUTCDate(next.getUTCDate() + 7);
+    // ✅ PAST (today only tracking)
+    if(isToday && now < base){
+      allPassedToday = false;
+    }
 
-    if(!bestUpcoming || next < bestUpcoming){
-      bestUpcoming = next;
+    // ✅ NEXT WEEK fallback
+    if(now > base){
+      let next = new Date(base);
+      next.setUTCDate(next.getUTCDate() + 7);
+
+      if(!bestUpcoming || next < bestUpcoming){
+        bestUpcoming = next;
+      }
     }
 
   });
 
+  // 🔥 ACTIVE wins
   if(isActive){
     return { status: "ACTIVE", time: bestUpcoming };
   }
 
+  // 🔥 COMPLETED (today fully done)
+  if(isToday && allPassedToday){
+    return { status: "COMPLETED", time: bestUpcoming };
+  }
+
+  // 🔥 UPCOMING
   if(bestUpcoming){
     return { status: "UPCOMING", time: bestUpcoming };
   }

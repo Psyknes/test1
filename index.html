@@ -2717,8 +2717,9 @@ function getTaskState(task){
   let targetDay = days.indexOf(task.d);
   let currentUTCDay = now.getUTCDay();
 
-  let bestTime = null;
   let isToday = (targetDay === currentUTCDay);
+
+  let bestTime = null;
 
   task.times.forEach(t => {
 
@@ -2741,23 +2742,25 @@ function getTaskState(task){
 
     let candidate = null;
 
+    // ✅ ACTIVE
     if(now >= base && now <= end){
-      // ACTIVE
       candidate = base;
     }
-    else if(now < base){
-      // UPCOMING (this week)
-      candidate = base;
-    }
-    else{
-      // already passed
 
+    // ✅ UPCOMING (this week)
+    else if(now < base){
+      candidate = base;
+    }
+
+    // ❌ ALREADY PASSED
+    else{
+      // 🔥 CRITICAL FIX:
+      // If today → DO NOT push to next week
       if(isToday){
-        // 🔥 do NOT push today’s completed tasks to next week
         return; // skip this time slot
       }
 
-      // next week
+      // otherwise → next week
       let next = new Date(base);
       next.setUTCDate(next.getUTCDate() + 7);
       candidate = next;
@@ -2769,7 +2772,7 @@ function getTaskState(task){
 
   });
 
-  // 🔥 if today and no valid future time → COMPLETED
+  // 🔥 FINAL FIX: TODAY but no future slots → COMPLETED
   if(isToday && !bestTime){
     return { status: "COMPLETED", time: now };
   }
@@ -2788,7 +2791,7 @@ function getTaskState(task){
 let collapseState = {
   triple: true,
   double: true
-};  
+};
 
 function toggleList(type){
 
@@ -2883,34 +2886,18 @@ function renderDouble(){
 
   list.sort((a,b)=>{
 
-  let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
+    let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
 
-  // 1. status
-  if(order[a.state.status] !== order[b.state.status]){
-    return order[a.state.status] - order[b.state.status];
-  }
+    if(order[a.state.status] !== order[b.state.status]){
+      return order[a.state.status] - order[b.state.status];
+    }
 
-  // 🔥 2. DAY DIFFERENCE (FIX)
-  let today = new Date().getUTCDay();
+    if(a.task.priority !== b.task.priority){
+      return a.task.priority - b.task.priority;
+    }
 
-let dayA = a.state.time.getUTCDay();
-let dayB = b.state.time.getUTCDay();
-
-let diffA = (dayA - today + 7) % 7;
-let diffB = (dayB - today + 7) % 7;
-
-if(diffA !== diffB){
-  return diffA - diffB;
-}
-
-  // 3. priority (ONLY within same day)
-  if(a.task.priority !== b.task.priority){
-    return a.task.priority - b.task.priority;
-  }
-
-  // 4. time
-  return a.state.time - b.state.time;
-});
+    return a.state.time - b.state.time;
+  });
 
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
 

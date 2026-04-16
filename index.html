@@ -2697,18 +2697,13 @@ if(window.debugMode){
 
 function formatToLocalTimeFromDate(date){
 
-  if(!date) return "--:--";   // ✅ FIX
+  if(!date) return "--:--";
 
-  let h = date.getUTCHours();
-  let m = date.getUTCMinutes();
-
-  let ampm = h >= 12 ? "PM" : "AM";
-  h = h % 12;
-  h = h ? h : 12;
-
-  let mm = m < 10 ? "0" + m : m;
-
-  return `${h}:${mm} ${ampm}`;
+  return date.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
 }
 
 function formatToLocalDay(date){

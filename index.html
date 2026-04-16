@@ -2769,13 +2769,15 @@ function getTaskState(task){
 
     // ✅ NEXT WEEK fallback
     if(now > base){
-      let next = new Date(base);
-      next.setUTCDate(next.getUTCDate() + 7);
 
-      if(!bestUpcoming || next < bestUpcoming){
-        bestUpcoming = next;
-      }
-    }
+  let next = new Date(base);
+  next.setUTCDate(next.getUTCDate() + 7);
+
+  // 🚨 ONLY use next week if NOTHING else exists
+  if(!bestUpcoming){
+    bestUpcoming = next;
+  }
+}
 
   });
 

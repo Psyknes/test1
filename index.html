@@ -5,7 +5,7 @@
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  gtag('js', getNow());
 
   gtag('config', 'G-P41P2Y6L3F');
 </script>
@@ -1867,6 +1867,10 @@ height:80px;
 
 <script>
 
+function getNow(){
+  return window.TEST_NOW ? new Date(window.TEST_NOW) : getNow();
+}  
+
   
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;
@@ -1877,7 +1881,7 @@ function getMaintenanceState(){
 
 if(!maintenanceData) return "normal";
 
-let now = new Date();
+let now = getNow();
 
 // 🔴 EMERGENCY
 if(maintenanceData.emergency?.main){
@@ -1966,7 +1970,7 @@ let timerEl = document.getElementById("maintenanceTimer");
 if(!timerEl || !maintenanceData) return;
 
 let s = maintenanceData.scheduled;
-let now = new Date();
+let now = getNow();
 
 let currentDay = now.getUTCDay();
 let diff = currentDay - s.day;
@@ -2080,7 +2084,7 @@ return dayStr;   // 🔥 FIX
 
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-let date = new Date();
+let date = getNow();
 
 if(typeof hourUTC === "string" && hourUTC.includes(":")){
 hourUTC = Number(hourUTC.split(":")[0]);
@@ -2123,7 +2127,7 @@ ticker.style.display = "none";
 return;
 }
 
-let now = new Date();
+let now = getNow();
 
 // 🔥 DEFAULT STATES
 let isEmergency = false;
@@ -2231,7 +2235,7 @@ async function loadSpecialEvents(){
 
 function getActiveShortEvent(){
 
-  let now = new Date();
+  let now = getNow();
 
   let activeOrAlert = [];
   let cooldownList = [];
@@ -2331,7 +2335,7 @@ function updateSpecialBar(){
   let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
   imgEl.src = "images/events/" + imgName + ".png";
 
-  let now = new Date();
+  let now = getNow();
 
   let label = "";
   let remaining = 0;
@@ -2391,7 +2395,7 @@ function updateSpecialBar(){
 
 function updateLongEventTicker(){
 
-let now = new Date();
+let now = getNow();
 
 let events = longEvents
   .filter(e => e.active)
@@ -2527,9 +2531,9 @@ console.log("Prep loaded:", prepData);
 let html = "";
 
 // 🔥 get next day
-let now = new Date();
+let now = getNow();
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let tomorrowUTC = new Date();
+let tomorrowUTC = getNow();
 tomorrowUTC.setUTCDate(tomorrowUTC.getUTCDate() + 1);
 
 let nextDay = days[tomorrowUTC.getUTCDay()];
@@ -2569,7 +2573,7 @@ if(!state) return;
 
 let nextTime = state.time;
 
-let now = new Date();
+let now = getNow();
 let diff = nextTime - now;
 
 let h = Math.floor(diff/1000/60/60);
@@ -2711,9 +2715,9 @@ function getTaskState(task){
 
   if(!task || !task.times || !task.times.length) return null;
 
-  //let now = new Date();
+  //let now = getNow();
   //TESTING wED BUG
-  let now = window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
+  let now = window.TEST_NOW ? new Date(window.TEST_NOW) : getNow();
   console.log("TEST_NOW:", window.TEST_NOW, new Date(window.TEST_NOW));
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -2967,7 +2971,7 @@ Object.keys(map)
 .sort((a,b)=>{
 
 let order = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let todayIndex = new Date().getUTCDay();
+let todayIndex = getNow().getUTCDay();
 
 function getNextIndex(days){
 let indices = days.map(d => order.indexOf(d));
@@ -3039,7 +3043,7 @@ map[t.task].days.push(t.d);
 
 // 🔥 SORT (same smart logic as Day Exclusive)
 let order = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let todayIndex = new Date().getUTCDay();
+let todayIndex = getNow().getUTCDay();
 
 function getNextIndex(days){
 let indices = days.map(d => order.indexOf(d));
@@ -3103,7 +3107,7 @@ map[e.task].push(e.d);
 
 // 🔥 SORT (same smart logic)
 let order = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let todayIndex = new Date().getUTCDay();
+let todayIndex = getNow().getUTCDay();
 
 function getNextIndex(days){
 let indices = days.map(d => order.indexOf(d));
@@ -3141,9 +3145,9 @@ return {active:null, next:null};
 
 function getDayCountdown(type){
 
-let now = new Date();
+let now = getNow();
 
-let end = new Date();
+let end = getNow();
 end.setUTCHours(24,0,0,0);
 
 let diff = end - now;
@@ -3188,7 +3192,7 @@ function initHunterUI(){
 function updateTimer(){
 
   let {triple} = getTasks();
-  let now = new Date();
+  let now = getNow();
 
   let active = null;
   let upcoming = [];
@@ -3264,7 +3268,7 @@ timeEl.innerHTML = `
 function updateDoubleTimer(){
 
   let {double} = getTasks();
-  let now = new Date();
+  let now = getNow();
 
   let active = null;
   let upcoming = [];
@@ -3398,7 +3402,7 @@ function updateTodayPanel(){
   let container = document.getElementById("todayPanel");
   let html = "";
 
-  let now = new Date();
+  let now = getNow();
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let today = days[now.getUTCDay()];
 
@@ -3421,7 +3425,7 @@ function updateTodayPanel(){
 
     let [h,m] = t.times[0].split(":").map(Number);
 
-    let base = new Date();
+    let base = getNow();
     base.setUTCHours(h, m, 0, 0);
 
     let end = new Date(base.getTime() + t.duration * 60 * 60 * 1000);
@@ -3521,7 +3525,7 @@ function updateGoldmineBanner(){
   const banner = document.getElementById("goldmineBanner");
   if(!banner) return;
 
-  let now = new Date();
+  let now = getNow();
 
   let goldmine = longEvents.find(e => 
     e.name && e.name.toLowerCase().includes("goldmine")
@@ -3559,7 +3563,7 @@ console.log("renderAllShortEvents RUNNING");
   let container = document.getElementById("shortEventsRow");
   if(!container) return;
 
-  let now = new Date();
+  let now = getNow();
 
   let html = shortEvents
     .filter(e => e.active)
@@ -3590,7 +3594,7 @@ if(now > end && repeatMs > 0){
 }
 
 console.log("SHORT EVENT DEBUG:", e.name, {
-  now: new Date(),
+  now: getNow(),
   alertStart,
   start,
   end
@@ -3776,7 +3780,7 @@ function buildTodayTasksText(){
 
   let {triple, double, dayExclusive} = getTasks();
 
-  let now = new Date();
+  let now = getNow();
   let todayUTC = now.getUTCDay();
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];

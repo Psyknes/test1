@@ -2334,7 +2334,7 @@ function updateSpecialBar(){
   let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
   imgEl.src = "images/events/" + imgName + ".png";
 
-  let now = new Date();
+  let now = getNow();
 
   let label = "";
   let remaining = 0;
@@ -2394,7 +2394,7 @@ function updateSpecialBar(){
 
 function updateLongEventTicker(){
 
-let now = new Date();
+let now = getNow();
 
 let events = longEvents
   .filter(e => e.active)
@@ -2530,9 +2530,9 @@ console.log("Prep loaded:", prepData);
 let html = "";
 
 // 🔥 get next day
-let now = new Date();
+let now = getNow();
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let tomorrowUTC = new Date();
+let tomorrowUTC = new Date(getNow());
 tomorrowUTC.setUTCDate(tomorrowUTC.getUTCDate() + 1);
 
 let nextDay = days[tomorrowUTC.getUTCDay()];
@@ -2714,9 +2714,9 @@ function getTaskState(task){
 
   if(!task || !task.times || !task.times.length) return null;
 
-  //let now = getNow();
+  let now = getNow();
   //TESTING wED BUG
-  let now = window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
+  //let now = window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
   console.log("TEST_NOW:", window.TEST_NOW, new Date(window.TEST_NOW));
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];

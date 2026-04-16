@@ -2733,7 +2733,25 @@ function getTaskState(task){
 
     if(!t || typeof t !== "string" || !t.includes(":")) return;
 
-    let [h,m] = t.split(":").map(Number);
+    let h = 0, m = 0;
+
+if(t && typeof t === "string"){
+
+  // handle AM/PM
+  let match = t.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+
+  if(match){
+    h = Number(match[1]);
+    m = Number(match[2]);
+
+    let ampm = match[3];
+
+    if(ampm){
+      if(ampm.toUpperCase() === "PM" && h !== 12) h += 12;
+      if(ampm.toUpperCase() === "AM" && h === 12) h = 0;
+    }
+  }
+}
 
     if(isNaN(h)) h = 0;
     if(isNaN(m)) m = 0;

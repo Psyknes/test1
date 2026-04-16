@@ -2572,7 +2572,7 @@ if(!state) return;
 
 let nextTime = state.time;
 
-let now = new Date();
+let now = getNow();
 let diff = nextTime - now;
 
 let h = Math.floor(diff/1000/60/60);
@@ -2696,18 +2696,21 @@ if(window.debugMode){
 }
 
 function formatToLocalTimeFromDate(date){
+  let h = date.getUTCHours();
+  let m = date.getUTCMinutes();
 
-  if(!date) return "";
+  let ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12;
+  h = h ? h : 12;
 
-  return date.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
+  let mm = m < 10 ? "0" + m : m;
+
+  return `${h}:${mm} ${ampm}`;
 }
 
 function formatToLocalDay(date){
-  return date.toLocaleDateString('en-US', { weekday: 'short' });
+  let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  return days[date.getUTCDay()];
 }
   
 function getTaskState(task){

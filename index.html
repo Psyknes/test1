@@ -2718,17 +2718,13 @@ function getTaskState(task){
   if(!task || !task.times || !task.times.length) return null;
 
   let now = getNow();
-  //TESTING wED BUG
-  //let now = window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
-  console.log("TEST_NOW:", window.TEST_NOW, new Date(window.TEST_NOW));
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let targetDay = days.indexOf(task.d);
   let currentUTCDay = now.getUTCDay();
 
-  let isToday = (targetDay === currentUTCDay);
-
-  let bestTime = null;
+  let bestUpcoming = null;
+  let isActive = false;
 
   task.times.forEach(t => {
 
@@ -2749,52 +2745,40 @@ function getTaskState(task){
 
     let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
 
-    let candidate = null;
-
     // ✅ ACTIVE
     if(now >= base && now <= end){
-      candidate = base;
+      isActive = true;
+      bestUpcoming = base;
+      return;
     }
 
-    // ✅ UPCOMING (this week)
-    else if(now < base){
-      candidate = base;
-    }
-
-    // ❌ ALREADY PASSED
-    else{
-      // 🔥 CRITICAL FIX:
-      // If today → DO NOT push to next week
-      if(isToday){
-        return; // skip this time slot
+    // ✅ FUTURE (this week)
+    if(now < base){
+      if(!bestUpcoming || base < bestUpcoming){
+        bestUpcoming = base;
       }
-
-      // otherwise → next week
-      let next = new Date(base);
-      next.setUTCDate(next.getUTCDate() + 7);
-      candidate = next;
+      return;
     }
 
-    if(candidate && candidate >= now && (!bestTime || candidate < bestTime)){
-  bestTime = candidate;
-}
+    // ✅ PAST → consider next week
+    let next = new Date(base);
+    next.setUTCDate(next.getUTCDate() + 7);
+
+    if(!bestUpcoming || next < bestUpcoming){
+      bestUpcoming = next;
+    }
 
   });
 
-  // 🔥 FINAL FIX: TODAY but no future slots → COMPLETED
-  if(isToday && !bestTime){
-    return { status: "COMPLETED", time: now };
+  if(isActive){
+    return { status: "ACTIVE", time: bestUpcoming };
   }
 
-  if(!bestTime) return null;
-
-  let end = new Date(bestTime.getTime() + task.duration * 60 * 60 * 1000);
-
-  if(now >= bestTime && now <= end){
-    return { status: "ACTIVE", time: bestTime };
+  if(bestUpcoming){
+    return { status: "UPCOMING", time: bestUpcoming };
   }
 
-  return { status: "UPCOMING", time: bestTime };
+  return null;
 }
 
 let collapseState = {

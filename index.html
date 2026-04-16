@@ -3446,8 +3446,15 @@ function updateTodayPanel(){
 
     let [h,m] = t.times[0].split(":").map(Number);
 
-    let base = new Date();
-    base.setUTCHours(h, m, 0, 0);
+    let base = new Date(Date.UTC(
+  now.getUTCFullYear(),
+  now.getUTCMonth(),
+  now.getUTCDate(),
+  h,
+  m,
+  0,
+  0
+));
 
     let end = new Date(base.getTime() + t.duration * 60 * 60 * 1000);
 
@@ -3506,7 +3513,7 @@ function updateTodayPanel(){
     return list
       .filter(t => t.d === today)
       .map(t => {
-        let s = getTodayState(t);
+        let s = getTaskState(t);
         return {task:t, state:s};
       })
       .sort(sortTasks);

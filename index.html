@@ -2769,9 +2769,9 @@ function getTaskState(task){
       candidate = next;
     }
 
-    if(candidate && (!bestTime || candidate < bestTime)){
-      bestTime = candidate;
-    }
+    if(candidate && candidate >= now && (!bestTime || candidate < bestTime)){
+  bestTime = candidate;
+}
 
   });
 

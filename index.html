@@ -1880,7 +1880,7 @@ function getMaintenanceState(){
 
 if(!maintenanceData) return "normal";
 
-let now = new Date();
+let now = getNow();
 
 // 🔴 EMERGENCY
 if(maintenanceData.emergency?.main){
@@ -1969,7 +1969,7 @@ let timerEl = document.getElementById("maintenanceTimer");
 if(!timerEl || !maintenanceData) return;
 
 let s = maintenanceData.scheduled;
-let now = new Date();
+let now = getNow();
 
 let currentDay = now.getUTCDay();
 let diff = currentDay - s.day;
@@ -2126,7 +2126,7 @@ ticker.style.display = "none";
 return;
 }
 
-let now = new Date();
+let now = getNow();
 
 // 🔥 DEFAULT STATES
 let isEmergency = false;
@@ -2234,7 +2234,7 @@ async function loadSpecialEvents(){
 
 function getActiveShortEvent(){
 
-  let now = new Date();
+  let now = getNow();
 
   let activeOrAlert = [];
   let cooldownList = [];
@@ -2973,7 +2973,7 @@ Object.keys(map)
 .sort((a,b)=>{
 
 let order = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let todayIndex = new Date().getUTCDay();
+let todayIndex = getNow().getUTCDay();
 
 function getNextIndex(days){
 let indices = days.map(d => order.indexOf(d));

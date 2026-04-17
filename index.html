@@ -1867,6 +1867,12 @@ height:80px;
 
 <script>
 
+// 🔹 GLOBAL HELPERS (add here)
+
+function getNow(){
+  return window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
+}  
+
   
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;
@@ -2548,23 +2554,23 @@ let nextDayTasks = [...triple, ...double, ...dayExclusive]
     return t.d === nextDay;   // 🔥 ONLY tomorrow
   });
 
-nextDayTasks
+let prepared = nextDayTasks
+  .map(t => {
+    let state = getTaskState(t);
+    return state ? {task:t, state} : null;
+  })
+  .filter(x => x);
+
+prepared
 .sort((a,b)=>{
-
-  let sa = getTaskState(a);
-  let sb = getTaskState(b);
-
-  if(!sa && !sb) return 0;
-  if(!sa) return 1;
-  if(!sb) return -1;
-
-  return sa.time - sb.time;
+  return a.state.time.getTime() - b.state.time.getTime();
 })
-.forEach(t => {
+.forEach(x => {
 
+let t = x.task;
+let state = x.state;
 let p = prepMap[t.task];
-
-let state = getTaskState(t);
+  
 if(!state) return;
 
 let nextTime = state.time;
@@ -2711,45 +2717,73 @@ function getTaskState(task){
 
   if(!task || !task.times || !task.times.length) return null;
 
-  let now = new Date();
-
-  let [h,m] = task.times[0].split(":").map(Number);
+  let now = getNow ? getNow() : new Date();
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let targetDay = days.indexOf(task.d);
+  let targetDay = days.indexOf(task.d);
 
-// ✅ STEP 1: get current UTC day
-let currentUTCDay = now.getUTCDay();
+  let currentUTCDay = now.getUTCDay();
 
-// ✅ STEP 2: compute day difference
-let diff = targetDay - currentUTCDay;
-if(diff < 0) diff += 7;
+  let best = null;
+  let isActive = false;
 
-// ✅ STEP 3: build base date in UTC ONLY
-let base = new Date(Date.UTC(
-  now.getUTCFullYear(),
-  now.getUTCMonth(),
-  now.getUTCDate() + diff,
-  h,
-  m,
-  0,
-  0
-));
+  task.times.forEach(t => {
 
-  let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
+    let [h,m] = (t || "00:00").split(":").map(Number);
 
-  if(now >= base && now <= end){
-    return { status: "ACTIVE", time: base };
+    if(isNaN(h)) h = 0;
+    if(isNaN(m)) m = 0;
+
+    // 🔥 ALWAYS BUILD BOTH POSSIBILITIES
+    let diff = targetDay - currentUTCDay;
+
+    let baseThisWeek = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + diff,
+      h,
+      m,
+      0,
+      0
+    ));
+
+    let baseNextWeek = new Date(baseThisWeek);
+    baseNextWeek.setUTCDate(baseNextWeek.getUTCDate() + 7);
+
+    let endThisWeek = new Date(baseThisWeek.getTime() + task.duration * 3600000);
+    let endNextWeek = new Date(baseNextWeek.getTime() + task.duration * 3600000);
+
+    // ✅ ACTIVE (this week)
+    if(now >= baseThisWeek && now <= endThisWeek){
+      isActive = true;
+      best = baseThisWeek;
+      return;
+    }
+
+    // ✅ FUTURE THIS WEEK
+    if(now < baseThisWeek){
+      if(!best || baseThisWeek < best){
+        best = baseThisWeek;
+      }
+      return;
+    }
+
+    // ✅ OTHERWISE → NEXT WEEK
+    if(!best || baseNextWeek < best){
+      best = baseNextWeek;
+    }
+
+  });
+
+  if(isActive){
+    return { status:"ACTIVE", time: best };
   }
 
-  if(now < base){
-    return { status: "UPCOMING", time: base };
+  if(best){
+    return { status:"UPCOMING", time: best };
   }
 
-  let next = new Date(base);
-  next.setUTCDate(next.getUTCDate() + 7);
-
-  return { status: "UPCOMING", time: next };
+  return null;
 }
 
 let collapseState = {
@@ -2781,18 +2815,20 @@ function renderTriple(){
     })
     .filter(x => x);
 
-  list.sort((a,b)=>{
+ list.sort((a,b)=>{
 
-    if(a.state.status !== b.state.status){
-      return a.state.status === "ACTIVE" ? -1 : 1;
-    }
+  let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
 
-    if(a.task.priority !== b.task.priority){
-      return a.task.priority - b.task.priority;
-    }
+  if(order[a.state.status] !== order[b.state.status]){
+    return order[a.state.status] - order[b.state.status];
+  }
 
-    return a.state.time - b.state.time;
-  });
+  if(a.task.priority !== b.task.priority){
+    return a.task.priority - b.task.priority;
+  }
+
+  return a.state.time.getTime() - b.state.time.getTime();
+});
 
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
 
@@ -2860,7 +2896,7 @@ function renderDouble(){
       return a.task.priority - b.task.priority;
     }
 
-    return a.state.time - b.state.time;
+    return a.state.time.getTime() - b.state.time.getTime();
   });
 
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
@@ -3178,7 +3214,7 @@ function updateTimer(){
       if(a.task.priority !== b.task.priority){
         return a.task.priority - b.task.priority;
       }
-      return a.state.time - b.state.time;
+      return a.state.time.getTime() - b.state.time.getTime();
     });
     best = upcoming[0];
   }
@@ -3254,7 +3290,7 @@ function updateDoubleTimer(){
       if(a.task.priority !== b.task.priority){
         return a.task.priority - b.task.priority;
       }
-      return a.state.time - b.state.time;
+      return a.state.time.getTime() - b.state.time.getTime();
     });
     best = upcoming[0];
   }
@@ -3375,7 +3411,7 @@ function updateTodayPanel(){
       return a.task.priority - b.task.priority;
     }
 
-    return a.state.time - b.state.time;
+    return a.state.time.getTime() - b.state.time.getTime();
   }
 
   function getTodayState(t){

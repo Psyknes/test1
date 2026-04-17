@@ -1867,9 +1867,6 @@ height:80px;
 
 <script>
 
-function getNow(){
-  return window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
-}  
   
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;
@@ -1880,7 +1877,7 @@ function getMaintenanceState(){
 
 if(!maintenanceData) return "normal";
 
-let now = getNow();
+let now = new Date();
 
 // 🔴 EMERGENCY
 if(maintenanceData.emergency?.main){
@@ -1969,7 +1966,7 @@ let timerEl = document.getElementById("maintenanceTimer");
 if(!timerEl || !maintenanceData) return;
 
 let s = maintenanceData.scheduled;
-let now = getNow();
+let now = new Date();
 
 let currentDay = now.getUTCDay();
 let diff = currentDay - s.day;
@@ -2126,7 +2123,7 @@ ticker.style.display = "none";
 return;
 }
 
-let now = getNow();
+let now = new Date();
 
 // 🔥 DEFAULT STATES
 let isEmergency = false;
@@ -2234,7 +2231,7 @@ async function loadSpecialEvents(){
 
 function getActiveShortEvent(){
 
-  let now = getNow();
+  let now = new Date();
 
   let activeOrAlert = [];
   let cooldownList = [];
@@ -2334,7 +2331,7 @@ function updateSpecialBar(){
   let imgName = e.name.toLowerCase().replace(/\s+/g,"_");
   imgEl.src = "images/events/" + imgName + ".png";
 
-  let now = getNow();
+  let now = new Date();
 
   let label = "";
   let remaining = 0;
@@ -2394,7 +2391,7 @@ function updateSpecialBar(){
 
 function updateLongEventTicker(){
 
-let now = getNow();
+let now = new Date();
 
 let events = longEvents
   .filter(e => e.active)
@@ -2530,9 +2527,9 @@ console.log("Prep loaded:", prepData);
 let html = "";
 
 // 🔥 get next day
-let now = getNow();
+let now = new Date();
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let tomorrowUTC = new Date(getNow());
+let tomorrowUTC = new Date();
 tomorrowUTC.setUTCDate(tomorrowUTC.getUTCDate() + 1);
 
 let nextDay = days[tomorrowUTC.getUTCDay()];
@@ -2572,7 +2569,7 @@ if(!state) return;
 
 let nextTime = state.time;
 
-let now = getNow();
+let now = new Date();
 let diff = nextTime - now;
 
 let h = Math.floor(diff/1000/60/60);
@@ -2697,7 +2694,7 @@ if(window.debugMode){
 
 function formatToLocalTimeFromDate(date){
 
-  if(!date) return "--:--";
+  if(!date) return "";
 
   return date.toLocaleTimeString([], {
     hour: '2-digit',
@@ -2707,107 +2704,52 @@ function formatToLocalTimeFromDate(date){
 }
 
 function formatToLocalDay(date){
-  let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  return days[date.getUTCDay()];
+  return date.toLocaleDateString('en-US', { weekday: 'short' });
 }
   
 function getTaskState(task){
 
   if(!task || !task.times || !task.times.length) return null;
 
-  let now = getNow();
+  let now = new Date();
+
+  let [h,m] = task.times[0].split(":").map(Number);
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  let targetDay = days.indexOf(task.d);
-  let currentUTCDay = now.getUTCDay();
+let targetDay = days.indexOf(task.d);
 
-  let bestTime = null;
-  let isActive = false;
+// ✅ STEP 1: get current UTC day
+let currentUTCDay = now.getUTCDay();
 
-  task.times.forEach(t => {
+// ✅ STEP 2: compute day difference
+let diff = targetDay - currentUTCDay;
+if(diff < 0) diff += 7;
 
-    if(!t || typeof t !== "string" || !t.includes(":")) return;
-
-    let h = 0, m = 0;
-
-if(t && typeof t === "string"){
-
-  // handle AM/PM
-  let match = t.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-
-  if(match){
-    h = Number(match[1]);
-    m = Number(match[2]);
-
-    let ampm = match[3];
-
-    if(ampm){
-      if(ampm.toUpperCase() === "PM" && h !== 12) h += 12;
-      if(ampm.toUpperCase() === "AM" && h === 12) h = 0;
-    }
-  }
-}
-
-    if(isNaN(h)) h = 0;
-    if(isNaN(m)) m = 0;
-
-    // 🔥 compute day difference (THIS WEEK FIRST)
-    let base = new Date(Date.UTC(
+// ✅ STEP 3: build base date in UTC ONLY
+let base = new Date(Date.UTC(
   now.getUTCFullYear(),
   now.getUTCMonth(),
-  now.getUTCDate(),
+  now.getUTCDate() + diff,
   h,
   m,
   0,
   0
 ));
 
-// 🔥 move to correct weekday explicitly
-let dayShift = targetDay - base.getUTCDay();
-if(dayShift < 0) dayShift += 7;
+  let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
 
-base.setUTCDate(base.getUTCDate() + dayShift);
-
-    let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
-
-    // 🔥 if already fully past → shift to next week
-    if(end < now){
-      base.setUTCDate(base.getUTCDate() + 7);
-      end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
-    }
-
-    // ✅ ACTIVE
-    if(now >= base && now <= end){
-      isActive = true;
-
-      if(!bestTime || base < bestTime){
-        bestTime = base;
-      }
-      return;
-    }
-
-    // ✅ UPCOMING (future)
-    if(now < base){
-      if(!bestTime || base < bestTime){
-        bestTime = base;
-      }
-      return;
-    }
-
-  });
-
-  // 🔥 ACTIVE
-  if(isActive){
-    return { status: "ACTIVE", time: bestTime };
+  if(now >= base && now <= end){
+    return { status: "ACTIVE", time: base };
   }
 
-  // 🔥 UPCOMING
-  if(bestTime){
-    return { status: "UPCOMING", time: bestTime };
+  if(now < base){
+    return { status: "UPCOMING", time: base };
   }
 
-  // 🔥 FALLBACK (should rarely hit)
-  return { status: "COMPLETED", time: now };
+  let next = new Date(base);
+  next.setUTCDate(next.getUTCDate() + 7);
+
+  return { status: "UPCOMING", time: next };
 }
 
 let collapseState = {
@@ -2908,22 +2850,18 @@ function renderDouble(){
 
   list.sort((a,b)=>{
 
-  let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
+    let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
 
-  // 1. STATUS
-  if(order[a.state.status] !== order[b.state.status]){
-    return order[a.state.status] - order[b.state.status];
-  }
+    if(order[a.state.status] !== order[b.state.status]){
+      return order[a.state.status] - order[b.state.status];
+    }
 
-  // 2. TIME (PRIMARY FIX)
-  let timeDiff = a.state.time - b.state.time;
-  if(timeDiff !== 0){
-    return timeDiff;
-  }
+    if(a.task.priority !== b.task.priority){
+      return a.task.priority - b.task.priority;
+    }
 
-  // 3. PRIORITY (ONLY SAME TIME)
-  return a.task.priority - b.task.priority;
-});
+    return a.state.time - b.state.time;
+  });
 
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
 
@@ -2990,7 +2928,7 @@ Object.keys(map)
 .sort((a,b)=>{
 
 let order = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let todayIndex = getNow().getUTCDay();
+let todayIndex = new Date().getUTCDay();
 
 function getNextIndex(days){
 let indices = days.map(d => order.indexOf(d));
@@ -3211,7 +3149,7 @@ function initHunterUI(){
 function updateTimer(){
 
   let {triple} = getTasks();
-  let now = getNow();
+  let now = new Date();
 
   let active = null;
   let upcoming = [];
@@ -3287,7 +3225,7 @@ timeEl.innerHTML = `
 function updateDoubleTimer(){
 
   let {double} = getTasks();
-  let now = getNow();
+  let now = new Date();
 
   let active = null;
   let upcoming = [];
@@ -3313,17 +3251,11 @@ function updateDoubleTimer(){
 
   if(!best && upcoming.length){
     upcoming.sort((a,b)=>{
-
-  // 🔥 TIME FIRST (CRITICAL FIX)
-  let timeDiff = a.state.time - b.state.time;
-  if(timeDiff !== 0){
-    return timeDiff;
-  }
-
-  // 🔥 PRIORITY ONLY IF SAME TIME
-  return a.task.priority - b.task.priority;
-
-});
+      if(a.task.priority !== b.task.priority){
+        return a.task.priority - b.task.priority;
+      }
+      return a.state.time - b.state.time;
+    });
     best = upcoming[0];
   }
 
@@ -3427,7 +3359,7 @@ function updateTodayPanel(){
   let container = document.getElementById("todayPanel");
   let html = "";
 
-  let now = getNow();
+  let now = new Date();
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let today = days[now.getUTCDay()];
 
@@ -3450,15 +3382,8 @@ function updateTodayPanel(){
 
     let [h,m] = t.times[0].split(":").map(Number);
 
-    let base = new Date(Date.UTC(
-  now.getUTCFullYear(),
-  now.getUTCMonth(),
-  now.getUTCDate(),
-  h,
-  m,
-  0,
-  0
-));
+    let base = new Date();
+    base.setUTCHours(h, m, 0, 0);
 
     let end = new Date(base.getTime() + t.duration * 60 * 60 * 1000);
 
@@ -3517,7 +3442,7 @@ function updateTodayPanel(){
     return list
       .filter(t => t.d === today)
       .map(t => {
-        let s = getTaskState(t);
+        let s = getTodayState(t);
         return {task:t, state:s};
       })
       .sort(sortTasks);
@@ -3595,7 +3520,7 @@ console.log("renderAllShortEvents RUNNING");
   let container = document.getElementById("shortEventsRow");
   if(!container) return;
 
-  let now = getNow();
+  let now = new Date();
 
   let html = shortEvents
     .filter(e => e.active)
@@ -3626,7 +3551,7 @@ if(now > end && repeatMs > 0){
 }
 
 console.log("SHORT EVENT DEBUG:", e.name, {
-  now: now,
+  now: new Date(),
   alertStart,
   start,
   end

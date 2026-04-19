@@ -2765,6 +2765,11 @@ function getTaskState(task){
 
   let diff = targetDay - currentDay;
 
+// 🔥 FIX: normalize ONLY past days (NOT same day)
+if(diff < 0){
+  diff += 7;
+}
+
   // 🔥 KEY FIX: allow SAME DAY to fallback properly
   let base = new Date(Date.UTC(
     now.getUTCFullYear(),

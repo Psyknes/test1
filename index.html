@@ -1871,6 +1871,17 @@ function getNow(){
   return window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
 }  
 
+///use below code for testing specific time
+///testTime("2026-04-15T14:50:00Z");  
+function testTime(t){
+  window.TEST_NOW = t;
+  renderTriple();
+  renderDouble();
+  updateTodayPanel();
+  updateTimer();
+  updateDoubleTimer();
+  loadPrep();
+}  
   
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;

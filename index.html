@@ -1867,12 +1867,6 @@ height:80px;
 
 <script>
 
-// 🔹 GLOBAL HELPERS (add here)
-
-function getNow(){
-  return window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
-}  
-
   
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;
@@ -2533,7 +2527,7 @@ console.log("Prep loaded:", prepData);
 let html = "";
 
 // 🔥 get next day
-let now = getNow();
+let now = new Date();
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let tomorrowUTC = new Date();
 tomorrowUTC.setUTCDate(tomorrowUTC.getUTCDate() + 1);
@@ -2554,27 +2548,28 @@ let nextDayTasks = [...triple, ...double, ...dayExclusive]
     return t.d === nextDay;   // 🔥 ONLY tomorrow
   });
 
-let prepared = nextDayTasks
-  .map(t => {
-    let state = getTaskState(t);
-    return state ? {task:t, state} : null;
-  })
-  .filter(x => x);
-
-prepared
+nextDayTasks
 .sort((a,b)=>{
-  return a.state.time.getTime() - b.state.time.getTime();
-})
-.forEach(x => {
 
-let t = x.task;
-let state = x.state;
+  let sa = getTaskState(a);
+  let sb = getTaskState(b);
+
+  if(!sa && !sb) return 0;
+  if(!sa) return 1;
+  if(!sb) return -1;
+
+  return sa.time - sb.time;
+})
+.forEach(t => {
+
 let p = prepMap[t.task];
-  
+
+let state = getTaskState(t);
 if(!state) return;
 
 let nextTime = state.time;
 
+let now = new Date();
 let diff = nextTime - now;
 
 let h = Math.floor(diff/1000/60/60);
@@ -2716,74 +2711,45 @@ function getTaskState(task){
 
   if(!task || !task.times || !task.times.length) return null;
 
-  let now = getNow ? getNow() : new Date();
+  let now = new Date();
+
+  let [h,m] = task.times[0].split(":").map(Number);
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  let targetDay = days.indexOf(task.d);
+let targetDay = days.indexOf(task.d);
 
-  let currentUTCDay = now.getUTCDay();
+// ✅ STEP 1: get current UTC day
+let currentUTCDay = now.getUTCDay();
 
-  let best = null;
-  let isActive = false;
-
-  task.times.forEach(t => {
-
-    let [h,m] = (t || "00:00").split(":").map(Number);
-
-    if(isNaN(h)) h = 0;
-    if(isNaN(m)) m = 0;
-
-    // 🔥 ALWAYS BUILD BOTH POSSIBILITIES
-    let diff = targetDay - currentUTCDay;
+// ✅ STEP 2: compute day difference
+let diff = targetDay - currentUTCDay;
 if(diff < 0) diff += 7;
 
-    let baseThisWeek = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() + diff,
-      h,
-      m,
-      0,
-      0
-    ));
+// ✅ STEP 3: build base date in UTC ONLY
+let base = new Date(Date.UTC(
+  now.getUTCFullYear(),
+  now.getUTCMonth(),
+  now.getUTCDate() + diff,
+  h,
+  m,
+  0,
+  0
+));
 
-    let baseNextWeek = new Date(baseThisWeek);
-    baseNextWeek.setUTCDate(baseNextWeek.getUTCDate() + 7);
+  let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
 
-    let endThisWeek = new Date(baseThisWeek.getTime() + task.duration * 3600000);
-    let endNextWeek = new Date(baseNextWeek.getTime() + task.duration * 3600000);
-
-    // ✅ ACTIVE (this week)
-    if(now >= baseThisWeek && now <= endThisWeek){
-      isActive = true;
-      best = baseThisWeek;
-      return;
-    }
-
-    // ✅ FUTURE THIS WEEK
-    if(now < baseThisWeek){
-      if(!best || baseThisWeek < best){
-        best = baseThisWeek;
-      }
-      return;
-    }
-
-    // ✅ OTHERWISE → NEXT WEEK
-    if(!best || baseNextWeek < best){
-      best = baseNextWeek;
-    }
-
-  });
-
-  if(isActive){
-    return { status:"ACTIVE", time: best };
+  if(now >= base && now <= end){
+    return { status: "ACTIVE", time: base };
   }
 
-  if(best){
-    return { status:"UPCOMING", time: best };
+  if(now < base){
+    return { status: "UPCOMING", time: base };
   }
 
-  return null;
+  let next = new Date(base);
+  next.setUTCDate(next.getUTCDate() + 7);
+
+  return { status: "UPCOMING", time: next };
 }
 
 let collapseState = {
@@ -2815,20 +2781,18 @@ function renderTriple(){
     })
     .filter(x => x);
 
- list.sort((a,b)=>{
+  list.sort((a,b)=>{
 
-  let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
+    if(a.state.status !== b.state.status){
+      return a.state.status === "ACTIVE" ? -1 : 1;
+    }
 
-  if(order[a.state.status] !== order[b.state.status]){
-    return order[a.state.status] - order[b.state.status];
-  }
+    if(a.task.priority !== b.task.priority){
+      return a.task.priority - b.task.priority;
+    }
 
-  if(a.task.priority !== b.task.priority){
-    return a.task.priority - b.task.priority;
-  }
-
-  return a.state.time.getTime() - b.state.time.getTime();
-});
+    return a.state.time - b.state.time;
+  });
 
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
 
@@ -2896,7 +2860,7 @@ function renderDouble(){
       return a.task.priority - b.task.priority;
     }
 
-    return a.state.time.getTime() - b.state.time.getTime();
+    return a.state.time - b.state.time;
   });
 
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
@@ -3185,7 +3149,7 @@ function initHunterUI(){
 function updateTimer(){
 
   let {triple} = getTasks();
-  let now = getNow();
+  let now = new Date();
 
   let active = null;
   let upcoming = [];
@@ -3214,7 +3178,7 @@ function updateTimer(){
       if(a.task.priority !== b.task.priority){
         return a.task.priority - b.task.priority;
       }
-      return a.state.time.getTime() - b.state.time.getTime();
+      return a.state.time - b.state.time;
     });
     best = upcoming[0];
   }
@@ -3261,7 +3225,7 @@ timeEl.innerHTML = `
 function updateDoubleTimer(){
 
   let {double} = getTasks();
-  let now = getNow();
+  let now = new Date();
 
   let active = null;
   let upcoming = [];
@@ -3290,7 +3254,7 @@ function updateDoubleTimer(){
       if(a.task.priority !== b.task.priority){
         return a.task.priority - b.task.priority;
       }
-      return a.state.time.getTime() - b.state.time.getTime();
+      return a.state.time - b.state.time;
     });
     best = upcoming[0];
   }
@@ -3395,7 +3359,7 @@ function updateTodayPanel(){
   let container = document.getElementById("todayPanel");
   let html = "";
 
-  let now = getNow();
+  let now = new Date();
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let today = days[now.getUTCDay()];
 
@@ -3411,7 +3375,7 @@ function updateTodayPanel(){
       return a.task.priority - b.task.priority;
     }
 
-    return a.state.time.getTime() - b.state.time.getTime();
+    return a.state.time - b.state.time;
   }
 
   function getTodayState(t){

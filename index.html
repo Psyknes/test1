@@ -2748,38 +2748,23 @@ function getTaskState(task){
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let targetDay = days.indexOf(task.d);
-  let currentUTCDay = now.getUTCDay();
+  let currentDay = now.getUTCDay();
 
   let best = null;
   let isActive = false;
 
   task.times.forEach(t => {
 
-    // ✅ STRICT PARSING (skip invalid times)
-    let h = null, m = null;
+    let h = 0, m = 0;
 
     if(typeof t === "string" && t.includes(":")){
       let parts = t.split(":");
-      h = Number(parts[0]);
-      m = Number(parts[1]);
-
-      if(isNaN(h) || isNaN(m)){
-        h = null;
-        m = null;
-      }
+      h = Number(parts[0]) || 0;
+      m = Number(parts[1]) || 0;
     }
 
-    // ❌ SKIP invalid entries (IMPORTANT FIX)
-    if(h === null || m === null){
-      return;
-    }
-
-    // ✅ normalize week diff
-    let diff = targetDay - currentUTCDay;
-
-if(diff < 0){
-  return null; // ignore past days
-}
+    // 🔥 SAME WEEK ONLY (no +7 ever)
+    let diff = targetDay - currentDay;
 
     let base = new Date(Date.UTC(
       now.getUTCFullYear(),
@@ -2800,30 +2785,37 @@ if(diff < 0){
       return;
     }
 
-    // ✅ UPCOMING (this week)
-    if(now < base){
+    // ✅ UPCOMING (future this week only)
+    if(diff >= 0 && now < base){
       if(!best || base < best){
         best = base;
       }
       return;
     }
 
-    // ✅ NEXT WEEK fallback
-    let next = new Date(base);
-    next.setUTCDate(next.getUTCDate() + 7);
-
-    if(!best || next < best){
-      best = next;
+    // ✅ COMPLETED (past this week)
+    if(diff < 0){
+      if(!best || base < best){
+        best = base;
+      }
     }
 
   });
+
+  // 🔥 PRIORITY OUTPUT
 
   if(isActive){
     return { status: "ACTIVE", time: best };
   }
 
   if(best){
-    return { status: "UPCOMING", time: best };
+    let diff = best - now;
+
+    if(diff > 0){
+      return { status: "UPCOMING", time: best };
+    } else {
+      return { status: "COMPLETED", time: best };
+    }
   }
 
   return null;

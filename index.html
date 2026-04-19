@@ -2646,24 +2646,31 @@ function buildTaskMap(){
     let key = e.d + "|" + e.task;
 
     if(!map[key]){
-      map[key] = {
-  d: e.d,
-  task: e.task,
-  times: [],
-  events: [],
-  categories: [],
-  duration: e.duration,
-  priority: e.priority
-};
+      map[key] = [];
     }
 
-    map[key].times.push(e.utc);
-    map[key].events.push(e.event);
-    map[key].categories.push(e.category);
+    map[key].push(e);
 
   });
 
-  return Object.values(map);
+  // 🔥 pick ONE best entry per task per day
+  return Object.values(map).map(entries => {
+
+    // ✅ prefer PP (non-00:00 time)
+    let best = entries.find(e => e.utc && e.utc !== "00:00") || entries[0];
+
+    return {
+      d: best.d,
+      task: best.task,
+      times: [best.utc],              // 👈 IMPORTANT: keep format compatible
+      events: [best.event],           // optional, safe
+      categories: [best.category],    // 👈 keep as array (your code expects this)
+      duration: best.duration,
+      priority: best.priority
+    };
+
+  });
+
 }
 
 function classifyTasks(){

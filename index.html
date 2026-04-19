@@ -2713,43 +2713,70 @@ function getTaskState(task){
 
   let now = new Date();
 
-  let [h,m] = task.times[0].split(":").map(Number);
-
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-let targetDay = days.indexOf(task.d);
+  let targetDay = days.indexOf(task.d);
+  let currentUTCDay = now.getUTCDay();
 
-// ✅ STEP 1: get current UTC day
-let currentUTCDay = now.getUTCDay();
+  let best = null;
+  let isActive = false;
 
-// ✅ STEP 2: compute day difference
-let diff = targetDay - currentUTCDay;
-if(diff < 0) diff += 7;
+  task.times.forEach(t => {
 
-// ✅ STEP 3: build base date in UTC ONLY
-let base = new Date(Date.UTC(
-  now.getUTCFullYear(),
-  now.getUTCMonth(),
-  now.getUTCDate() + diff,
-  h,
-  m,
-  0,
-  0
-));
+    let [h,m] = (t || "00:00").split(":").map(Number);
 
-  let end = new Date(base.getTime() + task.duration * 60 * 60 * 1000);
+    if(isNaN(h)) h = 0;
+    if(isNaN(m)) m = 0;
 
-  if(now >= base && now <= end){
-    return { status: "ACTIVE", time: base };
+    // 🔥 normalize diff (THIS is the actual fix)
+    let diff = targetDay - currentUTCDay;
+    if(diff < 0) diff += 7;
+
+    let base = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + diff,
+      h,
+      m,
+      0,
+      0
+    ));
+
+    let end = new Date(base.getTime() + task.duration * 3600000);
+
+    // ACTIVE
+    if(now >= base && now <= end){
+      isActive = true;
+      best = base;
+      return;
+    }
+
+    // UPCOMING (this week)
+    if(now < base){
+      if(!best || base < best){
+        best = base;
+      }
+      return;
+    }
+
+    // NEXT WEEK fallback
+    let next = new Date(base);
+    next.setUTCDate(next.getUTCDate() + 7);
+
+    if(!best || next < best){
+      best = next;
+    }
+
+  });
+
+  if(isActive){
+    return { status: "ACTIVE", time: best };
   }
 
-  if(now < base){
-    return { status: "UPCOMING", time: base };
+  if(best){
+    return { status: "UPCOMING", time: best };
   }
 
-  let next = new Date(base);
-  next.setUTCDate(next.getUTCDate() + 7);
-
-  return { status: "UPCOMING", time: next };
+  return null;
 }
 
 let collapseState = {

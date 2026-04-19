@@ -2808,17 +2808,24 @@ function getTaskState(task){
     return { status: "ACTIVE", time: best };
   }
 
-  if(best){
-    let diff = best - now;
+ if(best){
+  let diff = best - now;
 
-    if(diff > 0){
-      return { status: "UPCOMING", time: best };
-    } else {
-      return { status: "COMPLETED", time: best };
-    }
+  if(diff > 0){
+    return { status: "UPCOMING", time: best };
+  } else {
+    return { status: "COMPLETED", time: best };
   }
+}
 
-  return null;
+// 🔥 THIS is the correct place
+console.warn("Missing state for:", task);
+
+// fallback (never return null)
+return {
+  status: "COMPLETED",
+  time: new Date(8640000000000000)
+};
 }
 
 let collapseState = {

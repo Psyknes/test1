@@ -2726,18 +2726,26 @@ function getTaskState(task){
 
   task.times.forEach(t => {
 
-    let h = 0, m = 0;
+    // ✅ STRICT PARSING (skip invalid times)
+    let h = null, m = null;
 
-if(typeof t === "string" && t.includes(":")){
-  let parts = t.split(":");
-  h = Number(parts[0]);
-  m = Number(parts[1]);
+    if(typeof t === "string" && t.includes(":")){
+      let parts = t.split(":");
+      h = Number(parts[0]);
+      m = Number(parts[1]);
 
-  if(isNaN(h)) h = 0;
-  if(isNaN(m)) m = 0;
-}
+      if(isNaN(h) || isNaN(m)){
+        h = null;
+        m = null;
+      }
+    }
 
-    // 🔥 normalize diff (THIS is the actual fix)
+    // ❌ SKIP invalid entries (IMPORTANT FIX)
+    if(h === null || m === null){
+      return;
+    }
+
+    // ✅ normalize week diff
     let diff = targetDay - currentUTCDay;
     if(diff < 0) diff += 7;
 
@@ -2753,14 +2761,14 @@ if(typeof t === "string" && t.includes(":")){
 
     let end = new Date(base.getTime() + task.duration * 3600000);
 
-    // ACTIVE
+    // ✅ ACTIVE
     if(now >= base && now <= end){
       isActive = true;
       best = base;
       return;
     }
 
-    // UPCOMING (this week)
+    // ✅ UPCOMING (this week)
     if(now < base){
       if(!best || base < best){
         best = base;
@@ -2768,7 +2776,7 @@ if(typeof t === "string" && t.includes(":")){
       return;
     }
 
-    // NEXT WEEK fallback
+    // ✅ NEXT WEEK fallback
     let next = new Date(base);
     next.setUTCDate(next.getUTCDate() + 7);
 

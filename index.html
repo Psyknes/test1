@@ -2755,79 +2755,70 @@ function getTaskState(task){
 
   task.times.forEach(t => {
 
-  let h = 0, m = 0;
+    let h = 0, m = 0;
 
-  if(typeof t === "string" && t.includes(":")){
-    let parts = t.split(":");
-    h = Number(parts[0]) || 0;
-    m = Number(parts[1]) || 0;
-  }
+    if(typeof t === "string" && t.includes(":")){
+      let parts = t.split(":");
+      h = Number(parts[0]) || 0;
+      m = Number(parts[1]) || 0;
+    }
 
-  let diff = targetDay - currentDay;
+    let diff = targetDay - currentDay; // ✅ only once
 
-// 🔥 FIX: normalize ONLY past days (NOT same day)
-let diff = targetDay - currentDay;
+    let base = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + diff,
+      h,
+      m,
+      0,
+      0
+    ));
 
-  // 🔥 KEY FIX: allow SAME DAY to fallback properly
-  let base = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + diff,
-    h,
-    m,
-    0,
-    0
-  ));
+    let end = new Date(base.getTime() + task.duration * 3600000);
 
-  let end = new Date(base.getTime() + task.duration * 3600000);
+    // ACTIVE
+    if(now >= base && now <= end){
+      isActive = true;
+      best = base;
+      return;
+    }
 
-  // ✅ ACTIVE
-  if(now >= base && now <= end){
-    isActive = true;
-    best = base;
-    return;
-  }
+    // UPCOMING
+    if(now < base){
+      if(!best || base < best){
+        best = base;
+      }
+      return;
+    }
 
-  // ✅ UPCOMING (future today OR future week)
-  if(now < base){
+    // COMPLETED (stay in this week)
     if(!best || base < best){
       best = base;
     }
-    return;
-  }
 
-  // ✅ COMPLETED → ALWAYS push to next week
-  // COMPLETED → keep in this week (DO NOT jump)
-if(!best || base < best){
-  best = base;
-}
-
-});
-
-  // 🔥 PRIORITY OUTPUT
+  });
 
   if(isActive){
     return { status: "ACTIVE", time: best };
   }
 
- if(best){
-  let timeDiff = best - now;   // 🔥 rename variable
+  if(best){
+    let timeDiff = best - now;
 
-  if(timeDiff > 0){
-    return { status: "UPCOMING", time: best };
-  } else {
-    return { status: "COMPLETED", time: best };
+    if(timeDiff > 0){
+      return { status: "UPCOMING", time: best };
+    } else {
+      return { status: "COMPLETED", time: best };
+    }
   }
-}
 
-// 🔥 THIS is the correct place
-console.warn("Missing state for:", task);
+  console.warn("Missing state for:", task);
 
-// fallback (never return null)
-return {
-  status: "COMPLETED",
-  time: new Date(8640000000000000)
-};
+  return {
+    status: "COMPLETED",
+    time: new Date(8640000000000000)
+  };
 }
 
 let collapseState = {

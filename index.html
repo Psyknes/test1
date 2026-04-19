@@ -2766,9 +2766,7 @@ function getTaskState(task){
   let diff = targetDay - currentDay;
 
 // 🔥 FIX: normalize ONLY past days (NOT same day)
-if(diff < 0){
-  diff += 7;
-}
+let diff = targetDay - currentDay;
 
   // 🔥 KEY FIX: allow SAME DAY to fallback properly
   let base = new Date(Date.UTC(
@@ -2799,13 +2797,10 @@ if(diff < 0){
   }
 
   // ✅ COMPLETED → ALWAYS push to next week
-  let next = new Date(base);
-  next.setUTCDate(next.getUTCDate() + 7);
-
-  // 🔥 CRITICAL: ALWAYS assign something
-  if(!best || next < best){
-    best = next;
-  }
+  // COMPLETED → keep in this week (DO NOT jump)
+if(!best || base < best){
+  best = base;
+}
 
 });
 

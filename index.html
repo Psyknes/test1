@@ -1867,6 +1867,10 @@ height:80px;
 
 <script>
 
+function getNow(){
+  return window.TEST_NOW ? new Date(window.TEST_NOW) : new Date();
+}  
+
   
 let maintenanceData = null;
 let maintenanceMessageIndex = 0;
@@ -2711,7 +2715,7 @@ function getTaskState(task){
 
   if(!task || !task.times || !task.times.length) return null;
 
-  let now = new Date();
+  let now = getNow();
 
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let targetDay = days.indexOf(task.d);

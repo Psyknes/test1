@@ -3201,7 +3201,7 @@ function initHunterUI(){
 function updateTimer(){
 
   let {triple} = getTasks();
-  let now = new Date();
+  let now = getNow();
 
   let active = null;
   let upcoming = [];
@@ -3277,7 +3277,7 @@ timeEl.innerHTML = `
 function updateDoubleTimer(){
 
   let {double} = getTasks();
-  let now = new Date();
+  let now = getNow();
 
   let active = null;
   let upcoming = [];
@@ -3411,7 +3411,7 @@ function updateTodayPanel(){
   let container = document.getElementById("todayPanel");
   let html = "";
 
-  let now = new Date();
+  let now = getNow();
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let today = days[now.getUTCDay()];
 
@@ -3434,8 +3434,15 @@ function updateTodayPanel(){
 
     let [h,m] = t.times[0].split(":").map(Number);
 
-    let base = new Date();
-    base.setUTCHours(h, m, 0, 0);
+    let base = new Date(Date.UTC(
+  now.getUTCFullYear(),
+  now.getUTCMonth(),
+  now.getUTCDate(),
+  h,
+  m,
+  0,
+  0
+));
 
     let end = new Date(base.getTime() + t.duration * 60 * 60 * 1000);
 

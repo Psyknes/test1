@@ -2763,7 +2763,7 @@ function getTaskState(task){
     m = Number(parts[1]) || 0;
   }
 
-  let diff = targetDay - currentUTCDay;
+  let diff = targetDay - currentDay;
 
   // 🔥 KEY FIX: allow SAME DAY to fallback properly
   let base = new Date(Date.UTC(

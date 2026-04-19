@@ -2735,6 +2735,7 @@ function getTaskState(task){
 
     // 🔥 ALWAYS BUILD BOTH POSSIBILITIES
     let diff = targetDay - currentUTCDay;
+if(diff < 0) diff += 7;
 
     let baseThisWeek = new Date(Date.UTC(
       now.getUTCFullYear(),

@@ -2811,9 +2811,9 @@ if(!best || base < best){
   }
 
  if(best){
-  let diff = best - now;
+  let timeDiff = best - now;   // 🔥 rename variable
 
-  if(diff > 0){
+  if(timeDiff > 0){
     return { status: "UPCOMING", time: best };
   } else {
     return { status: "COMPLETED", time: best };

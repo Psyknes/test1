@@ -2533,7 +2533,7 @@ console.log("Prep loaded:", prepData);
 let html = "";
 
 // 🔥 get next day
-let now = new Date();
+let now = getNow();
 let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let tomorrowUTC = new Date();
 tomorrowUTC.setUTCDate(tomorrowUTC.getUTCDate() + 1);
@@ -2575,7 +2575,6 @@ if(!state) return;
 
 let nextTime = state.time;
 
-let now = new Date();
 let diff = nextTime - now;
 
 let h = Math.floor(diff/1000/60/60);
@@ -3185,7 +3184,7 @@ function initHunterUI(){
 function updateTimer(){
 
   let {triple} = getTasks();
-  let now = new Date();
+  let now = getNow();
 
   let active = null;
   let upcoming = [];
@@ -3261,7 +3260,7 @@ timeEl.innerHTML = `
 function updateDoubleTimer(){
 
   let {double} = getTasks();
-  let now = new Date();
+  let now = getNow();
 
   let active = null;
   let upcoming = [];
@@ -3395,7 +3394,7 @@ function updateTodayPanel(){
   let container = document.getElementById("todayPanel");
   let html = "";
 
-  let now = new Date();
+  let now = getNow();
   let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   let today = days[now.getUTCDay()];
 

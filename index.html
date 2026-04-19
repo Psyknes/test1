@@ -2919,18 +2919,20 @@ function renderDouble(){
 
   list.sort((a,b)=>{
 
-    let order = {ACTIVE:0, UPCOMING:1, COMPLETED:2};
+  const order = {
+    ACTIVE: 0,
+    UPCOMING: 1,
+    COMPLETED: 2
+  };
 
-    if(order[a.state.status] !== order[b.state.status]){
-      return order[a.state.status] - order[b.state.status];
-    }
+  // 1️⃣ Status first
+  if(order[a.state.status] !== order[b.state.status]){
+    return order[a.state.status] - order[b.state.status];
+  }
 
-    if(a.task.priority !== b.task.priority){
-      return a.task.priority - b.task.priority;
-    }
-
-    return a.state.time - b.state.time;
-  });
+  // 2️⃣ Then by actual time
+  return a.state.time.getTime() - b.state.time.getTime();
+});
 
   let nextUpcomingIndex = list.findIndex(x => x.state.status === "UPCOMING");
 

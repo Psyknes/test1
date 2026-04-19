@@ -2755,52 +2755,54 @@ function getTaskState(task){
 
   task.times.forEach(t => {
 
-    let h = 0, m = 0;
+  let h = 0, m = 0;
 
-    if(typeof t === "string" && t.includes(":")){
-      let parts = t.split(":");
-      h = Number(parts[0]) || 0;
-      m = Number(parts[1]) || 0;
-    }
+  if(typeof t === "string" && t.includes(":")){
+    let parts = t.split(":");
+    h = Number(parts[0]) || 0;
+    m = Number(parts[1]) || 0;
+  }
 
-    // 🔥 SAME WEEK ONLY (no +7 ever)
-    let diff = targetDay - currentDay;
+  let diff = targetDay - currentUTCDay;
 
-    let base = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() + diff,
-      h,
-      m,
-      0,
-      0
-    ));
+  // 🔥 KEY FIX: allow SAME DAY to fallback properly
+  let base = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + diff,
+    h,
+    m,
+    0,
+    0
+  ));
 
-    let end = new Date(base.getTime() + task.duration * 3600000);
+  let end = new Date(base.getTime() + task.duration * 3600000);
 
-    // ✅ ACTIVE
-    if(now >= base && now <= end){
-      isActive = true;
+  // ✅ ACTIVE
+  if(now >= base && now <= end){
+    isActive = true;
+    best = base;
+    return;
+  }
+
+  // ✅ UPCOMING (future today OR future week)
+  if(now < base){
+    if(!best || base < best){
       best = base;
-      return;
     }
+    return;
+  }
 
-    // ✅ UPCOMING (future this week only)
-    if(diff >= 0 && now < base){
-      if(!best || base < best){
-        best = base;
-      }
-      return;
-    }
+  // ✅ COMPLETED → ALWAYS push to next week
+  let next = new Date(base);
+  next.setUTCDate(next.getUTCDate() + 7);
 
-    // ✅ COMPLETED (past this week)
-    if(diff < 0){
-      if(!best || base < best){
-        best = base;
-      }
-    }
+  // 🔥 CRITICAL: ALWAYS assign something
+  if(!best || next < best){
+    best = next;
+  }
 
-  });
+});
 
   // 🔥 PRIORITY OUTPUT
 

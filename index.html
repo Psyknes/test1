@@ -3322,11 +3322,8 @@ function updateDoubleTimer(){
 
   if(!best && upcoming.length){
     upcoming.sort((a,b)=>{
-      if(a.task.priority !== b.task.priority){
-        return a.task.priority - b.task.priority;
-      }
-      return a.state.time - b.state.time;
-    });
+  return a.state.time.getTime() - b.state.time.getTime();
+});
     best = upcoming[0];
   }
 

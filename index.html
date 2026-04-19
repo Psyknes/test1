@@ -2078,31 +2078,42 @@ if(state === "normal"){
 
 function getLocalDay(hourUTC, dayStr){
 
-if(hourUTC === "ALL" || hourUTC === undefined){
-return dayStr;   // 🔥 FIX
+  if(hourUTC === "ALL" || hourUTC === undefined){
+    return dayStr;
+  }
+
+  let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  let now = getNow();
+
+  if(typeof hourUTC === "string" && hourUTC.includes(":")){
+    hourUTC = Number(hourUTC.split(":")[0]);
+  }else{
+    hourUTC = Number(hourUTC);
+  }
+
+  let targetDay = days.indexOf(dayStr);
+  let currentDay = now.getUTCDay();
+
+  let diff = targetDay - currentDay;
+
+  // 🔥 no next-week rollover
+  if(diff < 0){
+    return dayStr;
+  }
+
+  let date = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + diff,
+    hourUTC,
+    0,
+    0,
+    0
+  ));
+
+  return days[date.getDay()];
 }
-
-let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-
-let date = new Date();
-
-if(typeof hourUTC === "string" && hourUTC.includes(":")){
-hourUTC = Number(hourUTC.split(":")[0]);
-}else{
-hourUTC = Number(hourUTC);
-}
-
-date.setUTCHours(hourUTC,0,0,0);
-
-let targetDay = days.indexOf(dayStr);
-let diff = targetDay - date.getUTCDay();
-if(diff < 0) diff += 7;
-
-date.setUTCDate(date.getUTCDate() + diff);
-
-// 🔥 convert to LOCAL day
-return days[date.getDay()];
-}  
   
 let rawData = [];
   
@@ -2754,7 +2765,10 @@ function getTaskState(task){
 
     // ✅ normalize week diff
     let diff = targetDay - currentUTCDay;
-    if(diff < 0) diff += 7;
+
+if(diff < 0){
+  return null; // ignore past days
+}
 
     let base = new Date(Date.UTC(
       now.getUTCFullYear(),

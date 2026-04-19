@@ -2726,10 +2726,16 @@ function getTaskState(task){
 
   task.times.forEach(t => {
 
-    let [h,m] = (t || "00:00").split(":").map(Number);
+    let h = 0, m = 0;
 
-    if(isNaN(h)) h = 0;
-    if(isNaN(m)) m = 0;
+if(typeof t === "string" && t.includes(":")){
+  let parts = t.split(":");
+  h = Number(parts[0]);
+  m = Number(parts[1]);
+
+  if(isNaN(h)) h = 0;
+  if(isNaN(m)) m = 0;
+}
 
     // 🔥 normalize diff (THIS is the actual fix)
     let diff = targetDay - currentUTCDay;
